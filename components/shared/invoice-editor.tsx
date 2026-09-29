@@ -97,7 +97,7 @@ type ActionResult =
   | { ok: true; document: Invoice }
   | { ok: false; error: string };
 
-const UNIT_OPTIONS = ["Jour", "Mois", "Heure", "Fois"];
+const UNIT_OPTIONS = ["Jour", "Mois", "Heure", "Fois", "FF", "U", "Trip"];
 const A4_WIDTH_PX = 793.7008;
 const A4_HEIGHT_PX = 1122.5197;
 const tools: { id: Tool; label: string; Icon: typeof FilePlus2 }[] = [

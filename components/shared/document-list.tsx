@@ -3,6 +3,7 @@ import { FileSpreadsheet } from "lucide-react";
 import { CreateAvoirButton } from "@/components/shared/create-avoir-button";
 import { DuplicateDocumentButton } from "@/components/shared/duplicate-document-button";
 import { InvoicePaidButton } from "@/components/shared/invoice-paid-button";
+import { RealtimeDocumentSearch } from "@/components/shared/realtime-document-search";
 import { getAccessContext } from "@/lib/auth/can-edit";
 import type { DocumentType } from "@/lib/db/documents";
 import { createClient } from "@/lib/supabase/server";
@@ -63,6 +64,19 @@ function formatActivity(value: string) {
   }).format(new Date(value));
 }
 
+function parseMoneySearch(value: string) {
+  const compact = value.replace(/\s/g, "");
+  if (!/^\d+(?:[.,]\d+)*$/.test(compact)) return null;
+  const separatorIndex = Math.max(compact.lastIndexOf(","), compact.lastIndexOf("."));
+  const decimalLength = separatorIndex < 0 ? 0 : compact.length - separatorIndex - 1;
+  const normalized =
+    separatorIndex >= 0 && decimalLength > 0 && decimalLength <= 2
+      ? `${compact.slice(0, separatorIndex).replace(/[.,]/g, "")}.${compact.slice(separatorIndex + 1)}`
+      : compact.replace(/[.,]/g, "");
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : null;
+}
+
 function hrefWithFilters(
   path: string,
   filters: DocumentListFilters,
@@ -103,8 +117,8 @@ export async function DocumentList({
       : "";
   const to =
     filters.to && /^\d{4}-\d{2}-\d{2}$/.test(filters.to) ? filters.to : "";
-  const search =
-    filters.search?.replace(/[^\p{L}\p{N}\s\-_/]/gu, " ").trim() ?? "";
+  const rawSearch = filters.search?.trim() ?? "";
+  const search = rawSearch.replace(/[^\p{L}\p{N}\s\-_/]/gu, " ").trim();
   const client = filters.client?.trim() ?? "";
   const requestedPage = Number.parseInt(filters.page ?? "1", 10);
   const page =
@@ -127,8 +141,13 @@ export async function DocumentList({
   if (from) query = query.gte("date", from);
   if (to) query = query.lte("date", to);
   if (client) query = query.ilike("client_name", `%${client}%`);
-  if (search)
-    query = query.or(`number.ilike.%${search}%,client_name.ilike.%${search}%`);
+  if (search) {
+    const amount = type === "facture" ? parseMoneySearch(rawSearch) : null;
+    const amountFilters = amount === null ? "" : `,ttc.eq.${amount},ht.eq.${amount}`;
+    query = query.or(
+      `number.ilike.%${search}%,client_name.ilike.%${search}%${amountFilters}`,
+    );
+  }
   if (
     type === "facture" &&
     draftScope === null &&
@@ -250,15 +269,23 @@ export async function DocumentList({
         {draftScope ? (
           <input name="drafts" type="hidden" value={draftScope} />
         ) : null}
-        <label className="text-sm font-semibold text-neutral-900">
-          Recherche
-          <input
-            className="mt-1 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900"
-            defaultValue={filters.search}
-            name="search"
-            placeholder="N° ou client"
+        {type === "facture" ? (
+          <RealtimeDocumentSearch
+            filters={filters}
+            initialValue={filters.search ?? ""}
+            path={path}
           />
-        </label>
+        ) : (
+          <label className="text-sm font-semibold text-neutral-900">
+            Recherche
+            <input
+              className="mt-1 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900"
+              defaultValue={filters.search}
+              name="search"
+              placeholder="N° ou client"
+            />
+          </label>
+        )}
         <label className="text-sm font-semibold text-neutral-900">
           Client
           <input
