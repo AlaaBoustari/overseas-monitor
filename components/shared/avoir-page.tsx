@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { InsertLineButton } from "@/components/shared/insert-line-button";
 import { LineItemDesignation } from "@/components/shared/line-item-designation";
 import { COMPANY_ADDRESS } from "@/lib/company-details";
 import type { LineItem } from "@/lib/db/document-calculations";
@@ -31,6 +32,7 @@ type AvoirPageProps = {
   measurementId?: string;
   selectedLine?: number;
   lineOffset?: number;
+  onInsertLine?: (lineIndex: number) => void;
   onSelectLine?: (lineIndex: number) => void;
 };
 
@@ -53,22 +55,32 @@ export function InvoiceLineRow({
   index,
   interactive = false,
   selected = false,
+  onInsertAfter,
+  onInsertBefore,
   onSelect,
 }: {
   line: LineItem;
   index: number;
   interactive?: boolean;
   selected?: boolean;
+  onInsertAfter?: () => void;
+  onInsertBefore?: () => void;
   onSelect?: () => void;
 }) {
   return (
     <tr
-      className={`invoice-line-row ${interactive ? "cursor-pointer" : ""} ${selected ? "bg-primary-50" : ""}`}
+      className={`invoice-line-row group ${interactive ? "cursor-pointer" : ""} ${selected ? "bg-primary-50" : ""}`}
       data-invoice-row={index}
       onClick={onSelect}
     >
-      <td className="break-words px-3 py-3 font-medium text-neutral-900">
+      <td className="relative break-words px-3 py-3 font-medium text-neutral-900">
+        {onInsertBefore ? (
+          <InsertLineButton label="Insérer une ligne avant" onClick={onInsertBefore} position="top" />
+        ) : null}
         <LineItemDesignation line={line} />
+        {onInsertAfter ? (
+          <InsertLineButton label="Insérer une ligne après" onClick={onInsertAfter} position="bottom" />
+        ) : null}
       </td>
       <td className="break-words px-2 py-3 text-center text-neutral-700">{line.unit}</td>
       <td className="px-2 py-3 text-center text-neutral-900">{line.qty}</td>
@@ -97,6 +109,7 @@ export function AvoirPage({
   measurementId,
   selectedLine,
   lineOffset = 0,
+  onInsertLine,
   onSelectLine,
 }: AvoirPageProps) {
   const showHeader = pageKind === "single" || pageKind === "first";
@@ -183,6 +196,8 @@ export function AvoirPage({
                 interactive={Boolean(onSelectLine)}
                 key={`${index}-${line.desc}`}
                 line={{ ...line, tva_rate: line.tva_rate ?? tvaRate }}
+                onInsertAfter={onInsertLine ? () => onInsertLine(lineOffset + index + 1) : undefined}
+                onInsertBefore={onInsertLine && index === 0 ? () => onInsertLine(lineOffset) : undefined}
                 onSelect={() => onSelectLine?.(lineOffset + index)}
                 selected={selectedLine === lineOffset + index}
               />

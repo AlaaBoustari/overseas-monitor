@@ -380,7 +380,10 @@ export function AvoirEditor({
     return true;
   }
 
-  function addLine(kind: "line" | "overtime" | "mobilisation" | "customs") {
+  function addLine(
+    kind: "line" | "overtime" | "mobilisation" | "customs",
+    index = Math.min(selectedLine + 1, lineItems.length),
+  ) {
     if (locked) return;
     const line: LineItem =
       kind === "overtime"
@@ -406,8 +409,11 @@ export function AvoirEditor({
               unit_price: 0,
               tva_rate: tvaRate,
             };
-    const index = lineItems.length;
-    setLineItems((current) => [...current, line]);
+    setLineItems((current) => [
+      ...current.slice(0, index),
+      line,
+      ...current.slice(index),
+    ]);
     setSelectedLine(index);
     setSelectedTool("line");
   }
@@ -416,9 +422,9 @@ export function AvoirEditor({
     if (locked) return;
     const engin = engins.find((item) => item.id === selectedEngin);
     if (!engin) return;
-    const index = lineItems.length;
+    const index = Math.min(selectedLine + 1, lineItems.length);
     setLineItems((current) => [
-      ...current,
+      ...current.slice(0, index),
       {
         desc: engin.name,
         unit: engin.unit,
@@ -426,6 +432,7 @@ export function AvoirEditor({
         unit_price: Number(engin.default_price) || 0,
         tva_rate: tvaRate,
       },
+      ...current.slice(index),
     ]);
     setSelectedLine(index);
     setSelectedTool("line");
@@ -448,6 +455,21 @@ export function AvoirEditor({
           : line,
       ),
     );
+  }
+
+  function moveLine(offset: -1 | 1) {
+    if (locked) return;
+    const targetIndex = selectedLine + offset;
+    if (targetIndex < 0 || targetIndex >= lineItems.length) return;
+    setLineItems((current) => {
+      const next = current.slice();
+      [next[selectedLine], next[targetIndex]] = [
+        next[targetIndex],
+        next[selectedLine],
+      ];
+      return next;
+    });
+    setSelectedLine(targetIndex);
   }
 
   async function assignNumber() {
@@ -765,6 +787,7 @@ export function AvoirEditor({
                       tvaBreakdown={viewerTvaBreakdown}
                       hasCachet={viewerHasCachet}
                       tvaRate={viewerTvaRate}
+                      onInsertLine={previewSnapshot || locked ? undefined : (lineIndex) => addLine("line", lineIndex)}
                       onSelectLine={previewSnapshot ? undefined : (lineIndex) => {
                         setSelectedLine(lineIndex);
                         setSelectedTool("line");
@@ -812,6 +835,8 @@ export function AvoirEditor({
             <div className="mt-5 space-y-4">
               {selected ? (
                 <LinePropertiesFields
+                  canMoveDown={selectedLine < lineItems.length - 1}
+                  canMoveUp={selectedLine > 0}
                   defaultTvaRate={tvaRate}
                   line={selected}
                   locked={locked}
@@ -821,6 +846,8 @@ export function AvoirEditor({
                       current.filter((_, index) => index !== selectedLine),
                     )
                   }
+                  onMoveDown={() => moveLine(1)}
+                  onMoveUp={() => moveLine(-1)}
                   unitOptions={unitOptions}
                 />
               ) : (

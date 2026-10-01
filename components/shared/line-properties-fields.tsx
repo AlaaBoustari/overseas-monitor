@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { LineItem } from "@/lib/db/document-calculations";
 
 export function LinePropertiesFields({
@@ -7,6 +8,10 @@ export function LinePropertiesFields({
   unitOptions,
   onChange,
   onDelete,
+  onMoveDown,
+  onMoveUp,
+  canMoveDown,
+  canMoveUp,
 }: {
   line: LineItem;
   locked: boolean;
@@ -14,6 +19,10 @@ export function LinePropertiesFields({
   unitOptions: readonly string[];
   onChange: (field: keyof LineItem, value: string) => void;
   onDelete: () => void;
+  onMoveDown: () => void;
+  onMoveUp: () => void;
+  canMoveDown: boolean;
+  canMoveUp: boolean;
 }) {
   const selectedTvaRate = line.tva_rate ?? defaultTvaRate;
   const normalizedTvaRate =
@@ -23,6 +32,29 @@ export function LinePropertiesFields({
 
   return (
     <>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          aria-label="Déplacer la ligne vers le haut"
+          className="flex h-10 w-full items-center justify-center rounded-full border border-primary-300 bg-primary-50 text-primary-900 shadow-sm transition hover:bg-primary-100 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:shadow-none"
+          disabled={locked || !canMoveUp}
+          onClick={onMoveUp}
+          title="Déplacer la ligne vers le haut"
+          type="button"
+        >
+          <ChevronUp aria-hidden="true" size={22} strokeWidth={2.5} />
+        </button>
+        <button
+          aria-label="Déplacer la ligne vers le bas"
+          className="flex h-10 w-full items-center justify-center rounded-full border border-primary-300 bg-primary-50 text-primary-900 shadow-sm transition hover:bg-primary-100 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:shadow-none"
+          disabled={locked || !canMoveDown}
+          onClick={onMoveDown}
+          title="Déplacer la ligne vers le bas"
+          type="button"
+        >
+          <ChevronDown aria-hidden="true" size={22} strokeWidth={2.5} />
+        </button>
+      </div>
+
       <label className="block text-sm font-semibold text-neutral-900">
         Désignation
         <textarea
