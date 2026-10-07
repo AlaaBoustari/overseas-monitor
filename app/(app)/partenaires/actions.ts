@@ -58,7 +58,7 @@ export async function updatePartenaire(id: string, formData: FormData) {
 
   const { error } = await supabase.from("partenaires").update(updates).eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/partenaires");
+  revalidatePath("/(app)", "layout");
   redirect("/partenaires");
 }
 

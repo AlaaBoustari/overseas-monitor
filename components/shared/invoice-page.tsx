@@ -144,7 +144,7 @@ export function InvoicePage({
               </p>
             </div>
           </div>
-          <div className="mt-4 w-fit max-w-full min-w-[80mm] min-h-[18mm] rounded-sm border border-primary-600 px-4 py-2 text-xs leading-snug">
+          <div className="mt-4 w-fit max-w-[60%] min-w-[80mm] min-h-[18mm] rounded-sm border border-primary-600 px-4 py-2 text-xs leading-snug">
             <p className="font-bold text-sm">{"Client: "+ document.client_name || "Client non renseigné"}</p>
             {document.client_address ? <p className="mt-0.5 text-[11px]">{document.client_address}</p> : null}
             {document.client_ice ? <p className="mt-0.5">ICE : {document.client_ice}</p> : null}

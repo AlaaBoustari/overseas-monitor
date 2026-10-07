@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   invoiceClient: {
     alignSelf: "flex-start",
     minWidth: 227,
-    maxWidth: 410,
+    maxWidth: "60%",
     minHeight: 51,
     marginTop: 12,
     border: `0.8 solid ${BLUE}`,
@@ -289,7 +289,7 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
             styles.invoiceClient,
             {
               width: Math.min(
-                410,
+                (595.28 - 25.5 * 2) * 0.6,
                 Math.max(227, 60 + (document.client_name?.length || 0) * 7.2),
               ),
             },

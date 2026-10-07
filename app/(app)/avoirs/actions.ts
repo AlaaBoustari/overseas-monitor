@@ -57,7 +57,7 @@ export async function createAvoirDraftAction(input: {
     const supabase = await createClient();
     const { data: facture, error: factureError } = await supabase
       .from("documents")
-      .select("id, type, number, client_name, client_ice, client_address")
+      .select("id, type, number, partenaire_id, client_name, client_ice, client_address")
       .eq("id", input.factureId)
       .eq("type", "facture")
       .eq("is_active", true)
@@ -68,7 +68,7 @@ export async function createAvoirDraftAction(input: {
       throw new DocumentError("INVALID_INPUT", "La facture sélectionnée est introuvable ou non verrouillée.");
     }
 
-    const document = await createDraftDocument("avoir", {
+    const document = await createDraftDocument("avoir", facture.partenaire_id || {
       name: facture.client_name,
       ice: facture.client_ice,
       address: facture.client_address,
