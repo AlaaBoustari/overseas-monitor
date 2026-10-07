@@ -82,15 +82,15 @@ export function InvoiceLineRow({
           <InsertLineButton label="Insérer une ligne après" onClick={onInsertAfter} position="bottom" />
         ) : null}
       </td>
-      <td className="break-words px-2 py-3 text-center text-neutral-700">{line.unit}</td>
-      <td className="px-2 py-3 text-center text-neutral-900">{line.qty}</td>
-      <td className="px-2 py-3 text-center text-neutral-900">
+      <td className="whitespace-nowrap px-2 py-3 text-center text-[11.5px] text-neutral-700">{line.unit}</td>
+      <td className="whitespace-nowrap px-2 py-3 text-center text-neutral-900">{line.qty}</td>
+      <td className="whitespace-nowrap px-2 py-3 text-center text-neutral-900">
         {line.tva_rate ?? 20}%
       </td>
-      <td className="px-2 py-3 text-right text-neutral-900">
+      <td className="whitespace-nowrap px-2 py-3 text-right text-neutral-900" style={{ fontSize: Math.min(12.5, 200 / formatAmount(line.unit_price).length) }}>
         {formatAmount(line.unit_price)}
       </td>
-      <td className="px-2 py-3 text-right font-medium text-neutral-900">
+      <td className="whitespace-nowrap px-2 py-3 text-right font-medium text-neutral-900" style={{ fontSize: Math.min(12.5, 200 / formatAmount(line.qty * line.unit_price).length) }}>
         {formatAmount(line.qty * line.unit_price)}
       </td>
     </tr>
@@ -175,18 +175,18 @@ export function AvoirPage({
         className={`min-h-0 flex-1 overflow-hidden ${showHeader ? "mt-5" : ""}`}
         data-invoice-table
       >
-        <table className="w-full table-fixed text-sm">
+        <table className="w-full table-fixed text-[12.5px]">
           <thead
             className="bg-primary-900 text-left text-white"
             data-invoice-table-header
           >
             <tr>
-              <th className="w-[33%] px-3 py-3">Désignation à créditer</th>
-              <th className="w-[8%] px-2 py-3 text-center">Unité</th>
-              <th className="w-[9%] px-2 py-3 text-center">Nombre</th>
-              <th className="w-[8%] px-2 py-3 text-center">TVA</th>
-              <th className="w-[21%] px-2 py-3 text-right">P.U. HT</th>
-              <th className="w-[21%] px-2 py-3 text-right">Montant HT</th>
+              <th className="w-[40%] px-3 py-3">Désignation à créditer</th>
+              <th className="w-[11%] px-2 py-3 text-center">Unité</th>
+              <th className="w-[7%] px-0 py-3 text-center">Nombre</th>
+              <th className="w-[6%] px-2 py-3 text-center">TVA</th>
+              <th className="w-[18%] px-2 py-3 text-right">P.U. HT</th>
+              <th className="w-[18%] px-2 py-3 text-right">Montant HT</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-primary-200">

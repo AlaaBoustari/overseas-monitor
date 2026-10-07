@@ -53,6 +53,9 @@ const TEXT = "#20242a";
 const MUTED = "#5e6670";
 const RED = "#e24848";
 const PAGE_HEIGHT = 841.89;
+const PAGE_WIDTH = 595.28;
+const PAGE_PADDING = 25.5;
+const TABLE_FONT_SIZE = 9.5;
 const GEIST_FONT_DIR = path.join(
   process.cwd(),
   "node_modules",
@@ -122,25 +125,26 @@ const styles = StyleSheet.create({
   detailLine: { marginTop: 1.5 },
   period: { marginTop: 13, color: RED, textAlign: "center", fontWeight: 600 },
   creditInfo: { marginTop: 13, textAlign: "center", lineHeight: 1.4 },
-  table: { marginTop: 15 },
+  table: { marginTop: 15, flexShrink: 0, fontSize: TABLE_FONT_SIZE },
   finalPageSpacer: { flexGrow: 1 },
   tableHeader: { flexDirection: "row", minHeight: 28, backgroundColor: NAVY, alignItems: "center" },
-  headerText: { color: "#ffffff", fontWeight: 700, fontSize: 10.5 },
+  headerText: { color: "#ffffff", fontWeight: 700, fontSize: TABLE_FONT_SIZE },
   narrowHeader: { paddingHorizontal: 0 },
   compactCell: { paddingHorizontal: 6 },
   row: {
     flexDirection: "row",
+    flexShrink: 0,
     minHeight: 25,
     borderBottom: `0.6 solid ${LIGHT_BLUE}`,
     alignItems: "center",
   },
-  cell: { paddingHorizontal: 9, paddingVertical: 9, color: TEXT },
-  designation: { width: "33%", fontWeight: 500 },
-  unit: { width: "8%", color: MUTED, textAlign: "center" },
-  qty: { width: "9%", textAlign: "center" },
-  vat: { width: "8%", textAlign: "center" },
-  unitPrice: { width: "21%", textAlign: "right" },
-  amount: { width: "21%", textAlign: "right", fontWeight: 500 },
+  cell: { paddingHorizontal: 9, paddingVertical: 8, color: TEXT },
+  designation: { width: "40%", fontWeight: 500 },
+  unit: { width: "11%", color: MUTED, textAlign: "center" },
+  qty: { width: "7%", textAlign: "center" },
+  vat: { width: "6%", textAlign: "center" },
+  unitPrice: { width: "18%", textAlign: "right" },
+  amount: { width: "18%", textAlign: "right", fontWeight: 500 },
   linePeriod: { marginTop: 3, color: BLUE, fontWeight: 600, fontSize: 6.7 },
   empty: { paddingVertical: 20, textAlign: "center", color: MUTED },
   totalsRow: { flexDirection: "row", gap: 22, marginTop: 14, alignItems: "flex-start" },
@@ -166,7 +170,7 @@ const styles = StyleSheet.create({
   signatures: {
     flexDirection: "row",
     gap: 18,
-    minHeight: 68,
+    minHeight: 80,
     marginTop: 8,
     borderTop: `0.6 solid ${LIGHT_BLUE}`,
     paddingTop: 7,
@@ -209,29 +213,23 @@ function formatAmount(value: number) {
     .replace(/\u202f/g, " ") + " MAD";
 }
 
-function estimateRowHeight(line: LineItem) {
-  const descriptionLines = Math.max(1, Math.ceil((line.desc?.length || 1) / 46));
-  return 35 + (descriptionLines - 1) * 9 + (line.period_start && line.period_end ? 10 : 0);
-}
+type PageMeasurements = {
+  header: number;
+  tableHeader: number;
+  rows: number[];
+  tail: number;
+  footer: number;
+};
 
-function pageBudgets(type: DocumentType, hasPeriod: boolean) {
-  const header = type === "facture" ? 105 : type === "avoir" ? 192 : 165 + (hasPeriod ? 18 : 0);
-  const tail = type === "facture" ? 165 : type === "devis" ? 250 : type === "avoir" ? 230 : 190;
-  const usable = PAGE_HEIGHT - 54;
-  const tableHeader = 28;
-  return {
-    single: usable - header - tail - tableHeader - 22,
-    first: usable - header - tableHeader - 22,
-    middle: usable - tableHeader - 25,
-    last: usable - tail - tableHeader - 22,
-  };
-}
-
-function paginate(document: PdfDocumentData) {
+function paginate(document: PdfDocumentData, measured: PageMeasurements) {
   const items = document.line_items ?? [];
   if (items.length === 0) return [[]];
-  const heights = items.map(estimateRowHeight);
-  const budgets = pageBudgets(document.type, Boolean(document.period_start || document.period_end));
+  const heights = measured.rows;
+  // Use the same font/layout engine as the final PDF, not character-count guesses.
+  const middle = PAGE_HEIGHT - PAGE_PADDING * 2 - measured.tableHeader - 1;
+  const first = middle - measured.header - styles.table.marginTop;
+  const last = middle - measured.tail - (measured.footer - PAGE_PADDING);
+  const budgets = { single: last - measured.header - styles.table.marginTop, first, middle, last };
   const total = heights.reduce((sum, height) => sum + height, 0);
   if (total <= budgets.single || items.length === 1) return [items];
 
@@ -274,7 +272,7 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
     avoir: "Avoir",
   };
   return (
-    <View>
+    <View id="document-header" style={{ flexShrink: 0 }}>
       <View style={styles.top}>
         <Image src={logo} style={styles.logo} />
         <View style={styles.titleBlock}>
@@ -351,7 +349,7 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
 function Table({ document, items, first }: { document: PdfDocumentData; items: LineItem[]; first: boolean }) {
   return (
     <View style={[styles.table, !first ? { marginTop: 0 } : undefined]}>
-      <View style={styles.tableHeader}>
+      <View id="table-header" style={styles.tableHeader}>
         <Text style={[styles.cell, styles.designation, styles.headerText]}>{document.type === "avoir" ? "Désignation à créditer" : "Désignation"}</Text>
         <Text style={[styles.cell, styles.unit, styles.headerText, styles.compactCell]}>Unité</Text>
         <Text style={[styles.cell, styles.qty, styles.headerText, styles.narrowHeader]}>Nombre</Text>
@@ -360,18 +358,18 @@ function Table({ document, items, first }: { document: PdfDocumentData; items: L
         <Text style={[styles.cell, styles.amount, styles.headerText, styles.compactCell]}>Montant HT</Text>
       </View>
       {items.map((line, index) => (
-        <View key={`${index}-${line.desc}`} style={styles.row} wrap={false}>
+        <View id={`row-${index}`} key={`${index}-${line.desc}`} style={styles.row} wrap={false}>
           <View style={[styles.cell, styles.designation]}>
             <Text>{line.desc || "Sans désignation"}</Text>
             {line.period_start && line.period_end ? (
               <Text style={styles.linePeriod}>PÉRIODE : DU {formatPeriodDate(line.period_start)} AU {formatPeriodDate(line.period_end)}</Text>
             ) : null}
           </View>
-          <Text style={[styles.cell, styles.unit, styles.compactCell]}>{line.unit}</Text>
-          <Text style={[styles.cell, styles.qty, styles.compactCell]}>{line.qty}</Text>
-          <Text style={[styles.cell, styles.vat, styles.compactCell]}>{line.tva_rate ?? document.tva_rate}%</Text>
-          <Text style={[styles.cell, styles.unitPrice, styles.compactCell]}>{formatAmount(line.unit_price)}</Text>
-          <Text style={[styles.cell, styles.amount, styles.compactCell]}>{formatAmount(line.qty * line.unit_price)}</Text>
+          <Text style={[styles.cell, styles.unit, styles.compactCell, fitCell(line.unit, 11)]}>{line.unit}</Text>
+          <Text style={[styles.cell, styles.qty, styles.compactCell, fitCell(String(line.qty), 7)]}>{line.qty}</Text>
+          <Text style={[styles.cell, styles.vat, styles.compactCell, fitCell(`${line.tva_rate ?? document.tva_rate}%`, 6)]}>{line.tva_rate ?? document.tva_rate}%</Text>
+          <Text style={[styles.cell, styles.unitPrice, styles.compactCell, fitCell(formatAmount(line.unit_price), 18)]}>{formatAmount(line.unit_price)}</Text>
+          <Text style={[styles.cell, styles.amount, styles.compactCell, fitCell(formatAmount(line.qty * line.unit_price), 18, 500)]}>{formatAmount(line.qty * line.unit_price)}</Text>
         </View>
       ))}
       {items.length === 0 ? <Text style={styles.empty}>Aucune ligne.</Text> : null}
@@ -447,7 +445,7 @@ function Totals({ document, cachet }: { document: PdfDocumentData; cachet: strin
 
 function Footer() {
   return (
-    <View style={styles.footer} fixed>
+    <View id="document-footer" style={styles.footer} fixed>
       <Text>Adresse : {COMPANY_ADDRESS}</Text>
       <Text style={styles.bold}>IF : 47244543  |  RC : 108893  |  TP : 64260589  |  ICE : 002629109000015  |  CNSS : 2285065</Text>
       <Text>Tél : +212 666 765 794  |  Email : a.sahraoui@overseasservices.ma</Text>
@@ -455,19 +453,19 @@ function Footer() {
   );
 }
 
-function DocumentPdf({ document, assets }: { document: PdfDocumentData; assets: PdfAssets }) {
-  const pages = paginate(document);
+function DocumentPdf({ document, assets, measured }: { document: PdfDocumentData; assets: PdfAssets; measured: PageMeasurements }) {
+  const pages = paginate(document, measured);
   return (
     <Document title={`${document.type}-${document.number || "Brouillon"}`} author="Overseas Services SARL">
       {pages.map((items, index) => {
         const first = index === 0;
         const last = index === pages.length - 1;
         return (
-          <Page key={index} size="A4" style={[styles.page, last ? { paddingBottom: 70 } : undefined]}>
+          <Page key={index} size="A4" wrap={false} style={[styles.page, { minHeight: PAGE_HEIGHT, maxHeight: PAGE_HEIGHT }, last ? { paddingBottom: measured.footer } : undefined]}>
             {first ? <Header document={document} logo={assets.logo} /> : null}
             <Table document={document} first={first} items={items} />
             {last ? <View style={styles.finalPageSpacer} /> : null}
-            {last ? <Totals cachet={assets.cachet} document={document} /> : null}
+            {last ? <View style={{ flexShrink: 0 }}><Totals cachet={assets.cachet} document={document} /></View> : null}
             {last ? <Footer /> : null}
           </Page>
         );
@@ -476,6 +474,58 @@ function DocumentPdf({ document, assets }: { document: PdfDocumentData; assets: 
   );
 }
 
-export function renderDocumentPdf(document: PdfDocumentData, assets: PdfAssets) {
-  return renderToBuffer(<DocumentPdf assets={assets} document={document} />);
+function fitCell(text: string, widthPercent: number, weight = 400) {
+  const font = Font.getFont({ fontFamily: "GeistPdf", fontWeight: weight }).data!;
+  const textWidth = font.layout(text).advanceWidth / font.unitsPerEm;
+  const available = (PAGE_WIDTH - PAGE_PADDING * 2) * widthPercent / 100 - 12 - 1;
+  return { fontSize: Math.min(TABLE_FONT_SIZE, available / textWidth) };
+}
+
+type PdfLayoutNode = {
+  props?: { id?: string };
+  box: { height: number };
+  children?: PdfLayoutNode[];
+};
+
+function measuredHeight(layout: PdfLayoutNode, id: string): number {
+  if (layout.props?.id === id) return layout.box.height;
+  for (const child of layout.children ?? []) {
+    const height = measuredHeight(child, id);
+    if (height >= 0) return height;
+  }
+  return -1;
+}
+
+export async function renderDocumentPdf(document: PdfDocumentData, assets: PdfAssets) {
+  await Promise.all([400, 500].map((fontWeight) => Font.load({ fontFamily: "GeistPdf", fontWeight })));
+  let layout: PdfLayoutNode | undefined;
+  // React-PDF v4 supplies the computed layout to onRender on the server.
+  // Measure once without page breaks, then render explicit A4 pages without a
+  // second, conflicting automatic pagination pass.
+  await renderToBuffer(
+    <Document onRender={(result) => {
+      layout = (result as unknown as { _INTERNAL__LAYOUT__DATA_: PdfLayoutNode })._INTERNAL__LAYOUT__DATA_;
+    }}>
+      <Page size="A4" wrap={false} style={styles.page}>
+        <Header document={document} logo={assets.logo} />
+        <Table document={document} first items={document.line_items} />
+        <View id="document-tail" style={{ flexShrink: 0 }}><Totals document={document} cachet={assets.cachet} /></View>
+        <Footer />
+      </Page>
+    </Document>,
+  );
+  if (!layout) throw new Error("PDF layout measurement failed");
+  const height = (id: string) => {
+    const value = measuredHeight(layout!, id);
+    if (value < 0) throw new Error(`PDF layout measurement missing: ${id}`);
+    return value;
+  };
+  const measured = {
+    header: height("document-header"),
+    tableHeader: height("table-header"),
+    rows: document.line_items.map((_, index) => height(`row-${index}`)),
+    tail: height("document-tail"),
+    footer: height("document-footer"),
+  };
+  return renderToBuffer(<DocumentPdf assets={assets} document={document} measured={measured} />);
 }
