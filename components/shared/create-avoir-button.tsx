@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 
 export function CreateAvoirButton({ factureId, factureNumber }: { factureId: string; factureNumber: string }) {
   const router = useRouter();

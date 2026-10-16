@@ -1,12 +1,13 @@
 import Image from "next/image";
 import { InsertLineButton } from "@/components/shared/insert-line-button";
 import { LineItemDesignation } from "@/components/shared/line-item-designation";
-import { COMPANY_ADDRESS } from "@/lib/company-details";
+import { companies, type CompanyId } from "@/lib/company-details";
 import type { LineItem } from "@/lib/db/document-calculations";
 
 export type InvoicePageKind = "single" | "first" | "middle" | "last";
 
 export type InvoicePageDocument = {
+  company: CompanyId;
   number: string | null;
   date: string;
   city: string;
@@ -108,6 +109,7 @@ export function InvoicePage({
   onInsertLine,
   onSelectLine,
 }: InvoicePageProps) {
+  const company = companies[document.company];
   const showHeader = pageKind === "single" || pageKind === "first";
   const showTotals = pageKind === "single" || pageKind === "last";
   const rootLabel = measurementId
@@ -127,11 +129,11 @@ export function InvoicePage({
           <div className="grid grid-cols-[1.15fr_0.85fr] items-center gap-6">
             <div>
               <Image
-                alt="Overseas Services"
+                alt={company.name}
                 className="h-auto w-[205px] object-contain"
                 height={50}
                 priority
-                src="/logo.png"
+                src={company.logo}
                 width={293}
               />
             </div>
@@ -202,12 +204,12 @@ export function InvoicePage({
               <p className="text-sm font-medium leading-relaxed">
                 {amountWords}
               </p>
-              {hasCachet ? (
+              {hasCachet && company.cachet ? (
                 <Image
                   alt="Cachet de l’entreprise"
                   className="pointer-events-none absolute left-9/12 top-5 z-10 h-auto w-40 -translate-x-1/2 object-contain"
                   height={407}
-                  src="/cachet.png"
+                  src={company.cachet!}
                   width={535}
                 />
               ) : null}
@@ -250,15 +252,15 @@ export function InvoicePage({
             className="invoice-footer mt-auto -mx-[9mm] -mb-[9mm] w-[210mm] shrink-0 border-t-4 border-primary-900 bg-neutral-100 px-[14mm] py-5 text-center text-xs leading-relaxed"
             data-invoice-footer
           >
-            <p>Adresse : {COMPANY_ADDRESS}</p>
+            <p>Adresse : {company.address}</p>
             <p className="mt-1 font-semibold">
-              IF : 47244543 &nbsp;|&nbsp; RC : 108893 &nbsp;|&nbsp; TP :
-              64260589 &nbsp;|&nbsp; ICE : 002629109000015 &nbsp;|&nbsp; CNSS :
-              2285065
+              IF : {company.fiscalId} &nbsp;|&nbsp; RC : {company.rc} &nbsp;|&nbsp; TP :
+              {company.tp} &nbsp;|&nbsp; ICE : {company.ice} &nbsp;|&nbsp; CNSS :
+              {company.cnss}
             </p>
             <p className="mt-1">
-              Tél : +212 666 765 794 &nbsp;|&nbsp; Email :
-              a.sahraoui@overseasservices.ma
+              Tél : {company.phone} &nbsp;|&nbsp; Email :
+              {company.email}
             </p>
           </footer>
         </>

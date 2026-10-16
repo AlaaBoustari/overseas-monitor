@@ -2,7 +2,7 @@
 
 import { LoaderCircle, ShieldCheck } from "lucide-react";
 import { useState, useTransition } from "react";
-import { updatePermissionAction } from "@/app/(app)/permissions/actions";
+import { updatePermissionAction } from "@/app/(app)/[company]/permissions/actions";
 import { resources, type Resource } from "@/lib/auth/resources";
 import { cn } from "@/lib/utils";
 import {

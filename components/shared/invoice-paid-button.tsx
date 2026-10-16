@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { CircleCheck, CircleX, LoaderCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { setInvoicePaidAction } from "@/app/(app)/factures/actions";
+import { useRouter } from "@/components/shared/company-navigation";
+import { setInvoicePaidAction } from "@/app/(app)/[company]/factures/actions";
 import { useConfirmDialog } from "@/components/shared/use-confirm-dialog";
 
 export function InvoicePaidButton({

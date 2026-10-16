@@ -1,4 +1,6 @@
-import Link from "next/link";
+import Link from "@/components/shared/company-navigation";
+import { companyPath } from "@/lib/company-details";
+import { getCompany } from "@/lib/company-server";
 import { FileSpreadsheet } from "lucide-react";
 import { CreateAvoirButton } from "@/components/shared/create-avoir-button";
 import { DuplicateDocumentButton } from "@/components/shared/duplicate-document-button";
@@ -99,6 +101,7 @@ export async function DocumentList({
   newLabel,
   filters,
 }: DocumentListProps) {
+  const company = await getCompany();
   const showInactive = filters.inactive === "1";
   const { userId, isAdmin, allowedResources } = await getAccessContext();
   const canAccessAvoirs =
@@ -129,7 +132,7 @@ export async function DocumentList({
     .select(
       "id, number, date, client_name, ttc, paid, is_locked, has_cachet, reference_facture_number, created_by, updated_at",
       { count: "exact" },
-    )
+    ).eq("company", await getCompany())
     .eq("type", type)
     .eq("is_active", !showInactive);
 
@@ -197,7 +200,7 @@ export async function DocumentList({
           {type === "facture" ? (
             <a
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-emerald-700 bg-emerald-700 px-4 text-center text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
-              href="/api/reports/factures.xlsx"
+              href={companyPath(company, "/api/reports/factures.xlsx")}
             >
               <FileSpreadsheet className="size-4" />
               Exporter le rapport Excel

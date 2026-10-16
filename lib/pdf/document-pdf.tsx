@@ -10,13 +10,14 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import path from "node:path";
-import { COMPANY_ADDRESS } from "@/lib/company-details";
+import { companies, type CompanyId } from "@/lib/company-details";
 import { amountInFrenchWords } from "@/lib/format/amount-in-words";
 import type { DocumentType } from "@/lib/db/documents";
 import { roundMoney, type LineItem } from "@/lib/db/document-calculations";
 
 export type PdfDocumentData = {
   id: string;
+  company: CompanyId;
   type: DocumentType;
   number: string | null;
   date: string;
@@ -43,7 +44,7 @@ export type PdfDocumentData = {
   avoir_payment_reference: string | null;
 };
 
-type PdfAssets = { logo: string; cachet: string };
+type PdfAssets = { logo: string; cachet: string | null };
 
 const NAVY = "#07305a";
 const BLUE = "#1772ba";
@@ -265,6 +266,7 @@ function paginate(document: PdfDocumentData, measured: PageMeasurements) {
 }
 
 function Header({ document, logo }: { document: PdfDocumentData; logo: string }) {
+  const company = companies[document.company];
   const titles: Record<DocumentType, string> = {
     facture: "Facture",
     devis: "Devis",
@@ -300,7 +302,7 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
       ) : (
         <View style={styles.partyRow}>
           <View style={styles.partyCard}>
-            <Text style={styles.bold}>{document.type === "bon_commande" ? "VENDEUR :" : "OVERSEAS SERVICES SARL"}</Text>
+            <Text style={styles.bold}>{document.type === "bon_commande" ? "VENDEUR :" : company.legalName}</Text>
             {document.type === "bon_commande" ? (
               <>
                 <Text style={[styles.bold, styles.detailLine]}>{document.client_name || "Fournisseur non renseigné"}</Text>
@@ -309,8 +311,8 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
               </>
             ) : (
               <>
-                <Text style={styles.smallAddress}>{COMPANY_ADDRESS}</Text>
-                <Text style={styles.detailLine}>ICE : 002629109000015</Text>
+                <Text style={styles.smallAddress}>{company.address}</Text>
+                <Text style={styles.detailLine}>ICE : {company.ice}</Text>
               </>
             )}
           </View>
@@ -318,9 +320,9 @@ function Header({ document, logo }: { document: PdfDocumentData; logo: string })
             <Text style={styles.bold}>{document.type === "bon_commande" ? "ACHETEUR :" : "CLIENT :"}</Text>
             {document.type === "bon_commande" ? (
               <>
-                <Text style={[styles.bold, styles.detailLine]}>OVERSEAS SERVICES SARL</Text>
-                <Text style={styles.smallAddress}>{COMPANY_ADDRESS}</Text>
-                <Text style={styles.detailLine}>ICE : 002629109000015</Text>
+                <Text style={[styles.bold, styles.detailLine]}>{company.legalName}</Text>
+                <Text style={styles.smallAddress}>{company.address}</Text>
+                <Text style={styles.detailLine}>ICE : {company.ice}</Text>
               </>
             ) : (
               <>
@@ -377,7 +379,8 @@ function Table({ document, items, first }: { document: PdfDocumentData; items: L
   );
 }
 
-function Totals({ document, cachet }: { document: PdfDocumentData; cachet: string }) {
+function Totals({ document, cachet }: { document: PdfDocumentData; cachet: string | null }) {
+  const company = companies[document.company];
   const breakdown = new Map<number, number>();
   for (const line of document.line_items) {
     const rate = line.tva_rate ?? document.tva_rate;
@@ -396,7 +399,7 @@ function Totals({ document, cachet }: { document: PdfDocumentData; cachet: strin
       >
         <View style={styles.words}>
           <Text>{amountInFrenchWords(document.ttc)}</Text>
-          {document.type === "facture" && document.has_cachet ? <Image src={cachet} style={styles.invoiceStamp} /> : null}
+          {document.type === "facture" && document.has_cachet && cachet ? <Image src={cachet} style={styles.invoiceStamp} /> : null}
         </View>
         <View style={styles.totals}>
           <View style={styles.totalLine}><Text style={styles.totalLabel}>Total HT</Text><Text style={styles.totalValue}>{formatAmount(document.ht)}</Text></View>
@@ -433,8 +436,8 @@ function Totals({ document, cachet }: { document: PdfDocumentData; cachet: strin
       {document.type !== "facture" ? (
         <View style={styles.signatures} wrap={false}>
           <View style={styles.signature}>
-            <Text>{document.type === "devis" ? "SIGNATURE DU FOURNISSEUR" : document.type === "bon_commande" ? "SIGNATURE DU CLIENT" : "CACHET ET SIGNATURE - OVERSEAS SERVICES"}</Text>
-            {document.has_cachet ? <Image src={cachet} style={styles.stamp} /> : null}
+            <Text>{document.type === "devis" ? "SIGNATURE DU FOURNISSEUR" : document.type === "bon_commande" ? "SIGNATURE DU CLIENT" : `CACHET ET SIGNATURE - ${company.signatureName}`}</Text>
+            {document.has_cachet && cachet ? <Image src={cachet} style={styles.stamp} /> : null}
           </View>
           <View style={styles.signature}><Text>{document.type === "devis" ? "SIGNATURE DU CLIENT" : document.type === "bon_commande" ? "SIGNATURE DU FOURNISSEUR" : "ACCUSÉ DE RÉCEPTION - CLIENT"}</Text></View>
         </View>
@@ -443,12 +446,13 @@ function Totals({ document, cachet }: { document: PdfDocumentData; cachet: strin
   );
 }
 
-function Footer() {
+function Footer({ companyId }: { companyId: CompanyId }) {
+  const company = companies[companyId];
   return (
     <View id="document-footer" style={styles.footer} fixed>
-      <Text>Adresse : {COMPANY_ADDRESS}</Text>
-      <Text style={styles.bold}>IF : 47244543  |  RC : 108893  |  TP : 64260589  |  ICE : 002629109000015  |  CNSS : 2285065</Text>
-      <Text>Tél : +212 666 765 794  |  Email : a.sahraoui@overseasservices.ma</Text>
+      <Text>Adresse : {company.address}</Text>
+      <Text style={styles.bold}>IF : {company.fiscalId}  |  RC : {company.rc}  |  TP : {company.tp}  |  ICE : {company.ice}  |  CNSS : {company.cnss}</Text>
+      <Text>Tél : {company.phone}  |  Email : {company.email}</Text>
     </View>
   );
 }
@@ -456,7 +460,7 @@ function Footer() {
 function DocumentPdf({ document, assets, measured }: { document: PdfDocumentData; assets: PdfAssets; measured: PageMeasurements }) {
   const pages = paginate(document, measured);
   return (
-    <Document title={`${document.type}-${document.number || "Brouillon"}`} author="Overseas Services SARL">
+    <Document title={`${document.type}-${document.number || "Brouillon"}`} author={companies[document.company].legalName}>
       {pages.map((items, index) => {
         const first = index === 0;
         const last = index === pages.length - 1;
@@ -466,7 +470,7 @@ function DocumentPdf({ document, assets, measured }: { document: PdfDocumentData
             <Table document={document} first={first} items={items} />
             {last ? <View style={styles.finalPageSpacer} /> : null}
             {last ? <View style={{ flexShrink: 0 }}><Totals cachet={assets.cachet} document={document} /></View> : null}
-            {last ? <Footer /> : null}
+            {last ? <Footer companyId={document.company} /> : null}
           </Page>
         );
       })}
@@ -510,7 +514,7 @@ export async function renderDocumentPdf(document: PdfDocumentData, assets: PdfAs
         <Header document={document} logo={assets.logo} />
         <Table document={document} first items={document.line_items} />
         <View id="document-tail" style={{ flexShrink: 0 }}><Totals document={document} cachet={assets.cachet} /></View>
-        <Footer />
+        <Footer companyId={document.company} />
       </Page>
     </Document>,
   );

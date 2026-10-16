@@ -15,7 +15,7 @@ export default function ForbiddenPage() {
         <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-neutral-600">
           Votre compte n’a pas accès à ce module. Contactez un administrateur si vous pensez qu’il s’agit d’une erreur.
         </p>
-        <Link className="mt-7 inline-flex min-h-11 items-center rounded-full bg-ink-900 px-5 text-sm font-semibold text-white" href="/dashboard">
+        <Link className="mt-7 inline-flex min-h-11 items-center rounded-full bg-ink-900 px-5 text-sm font-semibold text-white" href="/companies">
           Retour au tableau de bord
         </Link>
       </section>

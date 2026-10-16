@@ -1,9 +1,9 @@
 "use client";
 
 import { Copy, LoaderCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 import { useState, useTransition } from "react";
-import { duplicateDocumentAction } from "@/app/(app)/documents/actions";
+import { duplicateDocumentAction } from "@/app/(app)/[company]/documents/actions";
 
 export function DuplicateDocumentButton({
   documentId,

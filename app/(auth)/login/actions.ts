@@ -22,7 +22,7 @@ export async function signIn(_: LoginState, formData: FormData): Promise<LoginSt
     return { error: "Adresse e-mail ou mot de passe incorrect." };
   }
 
-  redirect("/dashboard");
+  redirect("/companies");
 }
 
 export async function signOut() {

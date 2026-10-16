@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/company-navigation";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/components/shared/company-navigation";
 import { useEffect, useState } from "react";
 import {
   ClipboardList,

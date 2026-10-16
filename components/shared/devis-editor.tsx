@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/company-navigation";
 import {
   useEffect,
   useLayoutEffect,
@@ -10,7 +10,7 @@ import {
   useTransition,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 import {
   CalendarDays,
   ClipboardList,
@@ -39,7 +39,7 @@ import {
   saveDevisAction,
   unlockDevisAction,
   type DevisDocument,
-} from "@/app/(app)/devis/actions";
+} from "@/app/(app)/[company]/devis/actions";
 import {
   DevisPage,
   type InvoicePageKind,

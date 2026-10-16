@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { isCompanyId } from '@/lib/company-details'
 
 /**
  * If using Fluid compute: Don't put this client in a global variable. Always create a new client within each
@@ -7,11 +8,15 @@ import { cookies } from 'next/headers'
  */
 export async function createClient() {
   const cookieStore = await cookies()
+  const company = (await headers()).get('x-overseas-company')
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      global: {
+        headers: isCompanyId(company) ? { 'x-overseas-company': company } : {},
+      },
       cookies: {
         getAll() {
           return cookieStore.getAll()

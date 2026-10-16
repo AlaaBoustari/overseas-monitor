@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/shared/company-navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 import { useState, useTransition } from "react";
 import {
   CalendarDays,
@@ -12,7 +12,7 @@ import {
   LoaderCircle,
   Plus,
 } from "lucide-react";
-import { createPointageFactureDraftAction } from "@/app/(app)/pointage/actions";
+import { createPointageFactureDraftAction } from "@/app/(app)/[company]/pointage/actions";
 import { useConfirmDialog } from "@/components/shared/use-confirm-dialog";
 import { pointageMonthOptions } from "@/lib/pointage";
 

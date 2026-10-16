@@ -1,5 +1,7 @@
 "use client";
 
+import { companyPath } from "@/lib/company-details";
+import { useCompany } from "@/components/shared/company-navigation";
 import { useSyncExternalStore } from "react";
 import { Download, Printer } from "lucide-react";
 
@@ -24,7 +26,7 @@ export function DocumentExportActions({
   pdfDisabledTitle?: string;
 }) {
   const mobilePrint = useSyncExternalStore(subscribeToDevice, isMobileDevice, () => false);
-  const pdfUrl = `/api/documents/${kind}/${documentId}/pdf`;
+  const pdfUrl = companyPath(useCompany(), `/api/documents/${kind}/${documentId}/pdf`);
   return (
     <>
       {pdfDisabled ? (

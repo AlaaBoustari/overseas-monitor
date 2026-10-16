@@ -1,13 +1,14 @@
 import Image from "next/image";
 import { InsertLineButton } from "@/components/shared/insert-line-button";
 import { LineItemDesignation } from "@/components/shared/line-item-designation";
-import { COMPANY_ADDRESS } from "@/lib/company-details";
+import { companies, type CompanyId } from "@/lib/company-details";
 import type { LineItem } from "@/lib/db/document-calculations";
 
 export type InvoicePageKind = "single" | "first" | "middle" | "last";
 
 export type DevisPageDocument = {
   partenaire_id: string | null;
+  company: CompanyId;
   number: string | null;
   date: string;
   city: string;
@@ -115,6 +116,7 @@ export function DevisPage({
   onInsertLine,
   onSelectLine,
 }: DevisPageProps) {
+  const company = companies[document.company];
   const showHeader = pageKind === "single" || pageKind === "first";
   const showTotals = pageKind === "single" || pageKind === "last";
   const rootLabel = measurementId
@@ -134,11 +136,11 @@ export function DevisPage({
           <div className="grid grid-cols-[1.15fr_0.85fr] gap-8">
             <div>
               <Image
-                alt="Overseas Services"
+                alt={company.name}
                 className="h-auto w-[250px] object-contain"
                 height={88}
                 priority
-                src="/logo.png"
+                src={company.logo}
                 width={357}
               />
             </div>
@@ -154,9 +156,9 @@ export function DevisPage({
           </div>
           <div className="mt-5 grid w-full grid-cols-2 gap-5 rounded-2xl text-xs leading-relaxed">
             <div className="min-h-28 rounded-2xl border border-primary-600 px-5 py-4">
-              <p className="font-bold">OVERSEAS SERVICES SARL</p>
-              <p>{COMPANY_ADDRESS}</p>
-              <p>ICE : 002629109000015</p>
+              <p className="font-bold">{company.legalName}</p>
+              <p>{company.address}</p>
+              <p>ICE : {company.ice}</p>
             </div>
             <div className="min-h-28 rounded-2xl border border-primary-600 px-5 py-4">
               <p className="font-bold">CLIENT :</p>
@@ -281,12 +283,12 @@ export function DevisPage({
           <div className="mt-1 grid grid-cols-2 gap-6 border-t border-primary-200 pt-3 text-left text-[10px] font-semibold text-primary-900">
             <div className="relative min-h-[90px]">
               SIGNATURE DU FOURNISSEUR
-              {hasCachet ? (
+              {hasCachet && company.cachet ? (
                 <Image
                   alt="Cachet de l’entreprise"
                   className="pointer-events-none absolute left-9/12 bottom-2 h-auto w-32 -translate-x-1/2 object-contain"
                   height={439}
-                  src="/cachet.png"
+                  src={company.cachet!}
                   width={568}
                 />
               ) : null}
@@ -299,15 +301,15 @@ export function DevisPage({
             className="invoice-footer mt-auto -mx-[9mm] -mb-[9mm] w-[210mm] shrink-0 border-t-2 border-primary-900 bg-neutral-100 px-[14mm] py-5 text-center text-xs leading-relaxed"
             data-invoice-footer
           >
-            <p>Adresse : {COMPANY_ADDRESS}</p>
+            <p>Adresse : {company.address}</p>
             <p className="mt-1 font-semibold">
-              IF : 47244543 &nbsp;|&nbsp; RC : 108893 &nbsp;|&nbsp; TP :
-              64260589 &nbsp;|&nbsp; ICE : 002629109000015 &nbsp;|&nbsp; CNSS :
-              2285065
+              IF : {company.fiscalId} &nbsp;|&nbsp; RC : {company.rc} &nbsp;|&nbsp; TP :
+              {company.tp} &nbsp;|&nbsp; ICE : {company.ice} &nbsp;|&nbsp; CNSS :
+              {company.cnss}
             </p>
             <p className="mt-1">
-              Tél : +212 666 765 794 &nbsp;|&nbsp; Email :
-              a.sahraoui@overseasservices.ma
+              Tél : {company.phone} &nbsp;|&nbsp; Email :
+              {company.email}
             </p>
           </footer>
         </>

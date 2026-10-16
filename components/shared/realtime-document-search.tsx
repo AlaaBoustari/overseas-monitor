@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 
 type SearchFilters = Record<string, string | undefined>;
 

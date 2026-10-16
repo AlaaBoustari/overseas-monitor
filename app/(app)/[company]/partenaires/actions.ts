@@ -1,0 +1,76 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirectToCompany as redirect } from "@/lib/company-server";
+import { canEdit } from "@/lib/auth/can-edit";
+import { createClient } from "@/lib/supabase/server";
+
+function text(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+async function requireEdit() {
+  if (!(await canEdit("partenaires"))) await redirect("/partenaires?error=forbidden");
+}
+
+async function nameExists(supabase: Awaited<ReturnType<typeof createClient>>, name: string, id?: string) {
+  let query = supabase.from("partenaires").select("id").eq("name", name).eq("is_active", true).limit(1);
+  if (id) query = query.neq("id", id);
+  const { data } = await query;
+  return Boolean(data?.length);
+}
+
+export async function createPartenaire(formData: FormData) {
+  await requireEdit();
+  const name = text(formData, "name");
+  if (!name) await redirect("/partenaires/new?error=name");
+
+  const supabase = await createClient();
+  if (await nameExists(supabase, name)) await redirect("/partenaires/new?error=duplicate");
+  const { error } = await supabase.from("partenaires").insert({
+    name,
+    ice: text(formData, "ice") || null,
+    address: text(formData, "address") || null,
+    representative: text(formData, "representative") || null,
+    phone: text(formData, "phone") || null,
+  });
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/[company]/partenaires", "page");
+  await redirect("/partenaires");
+}
+
+export async function updatePartenaire(id: string, formData: FormData) {
+  await requireEdit();
+  const name = text(formData, "name");
+  if (!name) await redirect(`/partenaires/${id}/edit?error=name`);
+
+  const supabase = await createClient();
+  if (await nameExists(supabase, name, id)) await redirect(`/partenaires/${id}/edit?error=duplicate`);
+  const updates: Record<string, string | null> = {
+    name,
+    ice: text(formData, "ice") || null,
+    address: text(formData, "address") || null,
+    representative: text(formData, "representative") || null,
+    phone: text(formData, "phone") || null,
+  };
+
+  const { error } = await supabase.from("partenaires").update(updates).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/[company]", "layout");
+  await redirect("/partenaires");
+}
+
+export async function setPartenaireActive(id: string, isActive: boolean, destination = "/partenaires") {
+  await requireEdit();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("partenaires")
+    .update({ is_active: isActive })
+    .eq("id", id)
+    .select("id");
+  if (error || !data?.length) await redirect(`${destination}${destination.includes("?") ? "&" : "?"}error=soft-delete`);
+  revalidatePath("/[company]/partenaires", "page");
+  await redirect(destination);
+}

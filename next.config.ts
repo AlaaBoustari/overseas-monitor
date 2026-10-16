@@ -6,9 +6,10 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@react-pdf/renderer"],
   outputFileTracingIncludes: {
-    "/api/documents/*/*/pdf": [
+    "/*/api/documents/*/*/pdf": [
       "./public/logo.png",
       "./public/cachet.png",
+      "./public/lifting-logo.png",
       "./node_modules/geist/dist/fonts/geist-sans/Geist-Regular.ttf",
       "./node_modules/geist/dist/fonts/geist-sans/Geist-Medium.ttf",
       "./node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.ttf",

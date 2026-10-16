@@ -1,7 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isCompanyId } from '@/lib/company-details'
 
 export async function updateSession(request: NextRequest) {
+  const company = request.nextUrl.pathname.split('/')[1]
+  // Derive company only from the URL, replacing any client-supplied header.
+  request.headers.delete('x-overseas-company')
+  if (isCompanyId(company)) request.headers.set('x-overseas-company', company)
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -46,7 +52,30 @@ export async function updateSession(request: NextRequest) {
 
   if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/companies'
+    return NextResponse.redirect(url)
+  }
+
+  if (user && isCompanyId(company)) {
+    // Do not expose the new workspaces against an unmigrated database.
+    const { error } = await supabase.from('documents').select('company').limit(0)
+    if (error) {
+      if (request.method !== 'GET' || request.nextUrl.pathname.includes('/api/')) {
+        return NextResponse.json({ error: 'La base de données des sociétés n’est pas encore prête.' }, { status: 503 })
+      }
+      const url = request.nextUrl.clone()
+      url.pathname = '/company-setup'
+      url.search = ''
+      const response = NextResponse.rewrite(url, { request: { headers: request.headers } })
+      supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie))
+      return response
+    }
+  }
+
+  if (user && !isCompanyId(company) && !['/', '/login', '/companies', '/company-setup'].includes(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/companies'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 

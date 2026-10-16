@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { createInvoiceDraftAction } from "@/app/(app)/factures/actions";
+import { useRouter } from "@/components/shared/company-navigation";
+import { createInvoiceDraftAction } from "@/app/(app)/[company]/factures/actions";
 import { useConfirmDialog } from "@/components/shared/use-confirm-dialog";
 
 type Partner = { id: string; name: string; ice: string | null; address: string | null };

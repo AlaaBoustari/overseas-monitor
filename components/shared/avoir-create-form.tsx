@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createAvoirDraftAction } from "@/app/(app)/avoirs/actions";
+import Link from "@/components/shared/company-navigation";
+import { useRouter } from "@/components/shared/company-navigation";
+import { createAvoirDraftAction } from "@/app/(app)/[company]/avoirs/actions";
 import { useConfirmDialog } from "@/components/shared/use-confirm-dialog";
 
 type Facture = { id: string; number: string; date: string; client_name: string };

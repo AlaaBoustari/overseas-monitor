@@ -1,3 +1,4 @@
+import { companies } from "@/lib/company-details";
 import { daysInMonth, entryTotals, isSunday, type PointageSheet } from "@/lib/pointage";
 
 type CellStyle = Record<string, unknown>;
@@ -10,6 +11,7 @@ export async function exportPointageXlsx(
   sheet: PointageSheet,
   otReferenceHours: number,
 ) {
+  const company = companies[sheet.company];
   const XLSX = await import("xlsx-js-style");
   const dayCount = daysInMonth(sheet.ym);
   const [year, month] = sheet.ym.split("-");
@@ -114,7 +116,7 @@ export async function exportPointageXlsx(
   const title = [cell("Pointage des engins · POINTAGE DES ENGINS", titleStyle)];
   while (title.length <= lastColumn) title.push(cell("", titleStyle));
   rows.push(title);
-  const subtitleText = `${sheet.project ? `Chantier : ${sheet.project}　　` : ""}Client : ${sheet.client_name}　　Mois : ${year}an${monthNumber}mois　　OVERSEAS SERVICES`;
+  const subtitleText = `${sheet.project ? `Chantier : ${sheet.project}　　` : ""}Client : ${sheet.client_name}　　Mois : ${year}an${monthNumber}mois　　${company.signatureName}`;
   const subtitle = [cell(subtitleText, subtitleStyle)];
   while (subtitle.length <= lastColumn) subtitle.push(cell("", subtitleStyle));
   rows.push(subtitle);
@@ -197,7 +199,7 @@ export async function exportPointageXlsx(
   const signatures = [cell("Signature du client Signature Client : ", signatureStyle)];
   while (signatures.length <= lastColumn) signatures.push(cell("", signatureStyle));
   const middle = Math.floor(lastColumn / 2);
-  signatures[middle] = cell("OVERSEAS SERVICES : ", signatureStyle);
+  signatures[middle] = cell(`${company.signatureName} : `, signatureStyle);
   rows.push(signatures);
   rowHeights.push({ hpt: 28 });
   merges.push(

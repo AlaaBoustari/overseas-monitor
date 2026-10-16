@@ -1,5 +1,7 @@
+import { getCompany } from "@/lib/company-server";
 import "server-only";
 
+import type { CompanyId } from "@/lib/company-details";
 import { createClient } from "@/lib/supabase/server";
 import {
   cleanDayValues,
@@ -68,6 +70,7 @@ function mapSheet(
 ): PointageSheet {
   return {
     id: String(row.id),
+    company: row.company as CompanyId,
     partenaire_id: typeof row.partenaire_id === "string" ? row.partenaire_id : null,
     client_name: String(row.client_name ?? ""),
     client_ice: typeof row.client_ice === "string" ? row.client_ice : null,
@@ -103,8 +106,8 @@ export async function getPointageSheet(id: string) {
   const { data: sheet, error: sheetError } = await supabase
     .from("pointage_sheets")
     .select(
-      "id, partenaire_id, client_name, client_ice, client_address, ym, project, has_cachet, facture_id, is_active, updated_at",
-    )
+      "id, company, partenaire_id, client_name, client_ice, client_address, ym, project, has_cachet, facture_id, is_active, updated_at",
+    ).eq("company", await getCompany())
     .eq("id", id)
     .maybeSingle();
   if (sheetError) failDatabase(sheetError);
@@ -125,7 +128,7 @@ export async function getPointageSheet(id: string) {
   if (mapped.facture_id) {
     const { data: facture, error: factureError } = await supabase
       .from("documents")
-      .select("id, number, is_locked, is_active")
+      .select("id, number, is_locked, is_active").eq("company", await getCompany())
       .eq("id", mapped.facture_id)
       .maybeSingle();
     if (factureError) failDatabase(factureError);
@@ -143,7 +146,7 @@ export async function findPointageSheet(input: {
   const supabase = await createClient();
   let query = supabase
     .from("pointage_sheets")
-    .select("id")
+    .select("id").eq("company", await getCompany())
     .eq("ym", input.ym)
     .eq("is_active", true)
     .limit(1);
@@ -227,7 +230,7 @@ export async function savePointageSheet(input: SavePointageInput) {
   if (typeof input.hasCachet === "boolean") {
     const { error: cachetError } = await supabase
       .from("pointage_sheets")
-      .update({ has_cachet: input.hasCachet })
+      .update({ has_cachet: input.hasCachet }).eq("company", await getCompany())
       .eq("id", sheetId);
     if (cachetError) failDatabase(cachetError);
   }

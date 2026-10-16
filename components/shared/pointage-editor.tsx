@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/shared/company-navigation";
+import { useCompany, useRouter } from "@/components/shared/company-navigation";
 import {
   Check,
   Download,
@@ -20,7 +20,7 @@ import {
 import {
   createPointageFactureDraftAction,
   savePointageAction,
-} from "@/app/(app)/pointage/actions";
+} from "@/app/(app)/[company]/pointage/actions";
 import { PointageSheet } from "@/components/shared/pointage-sheet";
 import { EnginSelectOptions } from "@/components/shared/engin-select-options";
 import {
@@ -136,6 +136,7 @@ export function PointageEditor({
   ym: string;
 }) {
   const router = useRouter();
+  const company = useCompany();
   const [sheet, setSheet] = useState(initialSheet);
   const [partenaireId, setPartenaireId] = useState(
     initialSheet?.partenaire_id ?? initialClient.partenaireId,
@@ -501,6 +502,7 @@ export function PointageEditor({
         }
       : {
           id: "",
+          company,
           partenaire_id: partenaireId ?? null,
           client_name: clientName,
           client_ice: selectedPartner?.ice ?? (manualClientIce || null),

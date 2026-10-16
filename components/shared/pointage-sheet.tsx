@@ -1,5 +1,7 @@
 "use client";
 
+import { companies } from "@/lib/company-details";
+import { useCompany } from "@/components/shared/company-navigation";
 import { Fragment } from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
@@ -56,6 +58,7 @@ function PointagePrintDocument({
   project: string;
   ym: string;
 }) {
+  const company = companies[useCompany()];
   const days = Array.from({ length: daysInMonth(ym) }, (_, index) => index + 1);
   const entryGroups = chunks(activeEntries, 6);
   const pages = entryGroups.length ? entryGroups : [[]];
@@ -115,7 +118,7 @@ function PointagePrintDocument({
             {isLastPage ? (
               <footer className="pointage-print-signatures">
                 <p>Signature du client</p>
-                <div><p>OVERSEAS SERVICES</p>{hasCachet ? <Image alt="Cachet Overseas Services" height={200} src="/cachet.png" width={200} /> : null}</div>
+                <div><p>{company.signatureName}</p>{hasCachet && company.cachet ? <Image alt={`Cachet ${company.name}`} height={200} src={company.cachet!} width={200} /> : null}</div>
               </footer>
             ) : null}
           </article>
@@ -141,6 +144,7 @@ export function PointageSheet({
   onCachetChange,
   ym,
 }: PointageSheetProps) {
+  const company = companies[useCompany()];
   const dayCount = daysInMonth(ym);
   const activeEntries = entries
     .map((entry, index) => ({ entry, index }))
@@ -284,8 +288,8 @@ export function PointageSheet({
         <div className="grid grid-cols-2 gap-8 pt-6 text-center text-sm font-medium text-primary-900">
           <p className="border-t border-primary-300 pt-3">Signature du client</p>
           <div className="border-t border-primary-300 pt-3">
-            <p>OVERSEAS SERVICES</p>
-            {hasCachet ? <Image alt="Cachet Overseas Services" className="mx-auto mt-2 h-auto w-20 object-contain" height={200} src="/cachet.png" width={200} /> : null}
+            <p>{company.signatureName}</p>
+            {hasCachet && company.cachet ? <Image alt={`Cachet ${company.name}`} className="mx-auto mt-2 h-auto w-20 object-contain" height={200} src={company.cachet!} width={200} /> : null}
             {editable ? <label className="mt-2 inline-flex items-center gap-2 text-xs font-normal text-neutral-600 print:hidden"><input checked={hasCachet} onChange={(event) => onCachetChange(event.target.checked)} type="checkbox" />Inclure le cachet</label> : null}
           </div>
         </div>

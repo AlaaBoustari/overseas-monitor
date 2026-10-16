@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/company-navigation";
 import {
   useEffect,
   useLayoutEffect,
@@ -10,7 +10,7 @@ import {
   useTransition,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 import {
   CalendarDays,
   Clock3,
@@ -38,7 +38,7 @@ import {
   saveBonCommandeAction,
   unlockBonCommandeAction,
   type BonCommandeDocument,
-} from "@/app/(app)/bons-commande/actions";
+} from "@/app/(app)/[company]/bons-commande/actions";
 import {
   BonCommandePage,
   type InvoicePageKind,

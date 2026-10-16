@@ -1,3 +1,4 @@
+import type { CompanyId } from "@/lib/company-details";
 import { roundMoney, type LineItem } from "@/lib/db/document-calculations";
 
 export type DayValues = Record<string, number>;
@@ -15,6 +16,7 @@ export type PointageEntry = {
 };
 
 export type PointageSheet = {
+  company: CompanyId;
   id: string;
   partenaire_id: string | null;
   client_name: string;

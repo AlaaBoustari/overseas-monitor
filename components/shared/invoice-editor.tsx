@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/company-navigation";
 import {
   useLayoutEffect,
   useMemo,
@@ -9,7 +9,7 @@ import {
   useTransition,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/shared/company-navigation";
 import {
   CalendarDays,
   Clock3,
@@ -38,7 +38,7 @@ import {
   listInvoiceSnapshotsAction,
   restoreInvoiceSnapshotAction,
   unlockInvoiceAction,
-} from "@/app/(app)/factures/actions";
+} from "@/app/(app)/[company]/factures/actions";
 import {
   InvoicePage,
   type InvoicePageKind,
@@ -59,6 +59,7 @@ import {
 import type { DocumentSnapshot } from "@/lib/db/documents";
 
 type Invoice = {
+  company: import("@/lib/company-details").CompanyId;
   id: string;
   number: string | null;
   date: string;

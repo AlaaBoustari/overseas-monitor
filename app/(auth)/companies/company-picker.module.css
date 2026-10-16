@@ -1,0 +1,85 @@
+.page {
+  display: flex;
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: clamp(32px, 4vw, 64px) 24px 20px;
+}
+
+.content {
+  width: 100%;
+  max-width: 1440px;
+}
+
+.heading {
+  margin: 0 0 clamp(40px, 4vw, 72px);
+  color: #080808;
+  text-align: center;
+  font-size: clamp(28px, 3.4vw, 56px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: end;
+  gap: 24px;
+  margin-inline: auto;
+}
+
+.card {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: clamp(24px, 3vw, 48px);
+  transform-origin: center bottom;
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--color-primary-600);
+  outline-offset: 6px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logout {
+  margin-top: 24px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 48px);
+    max-width: min(100%, calc((100svh - 240px) * 1.58 + 48px));
+  }
+}
+
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .card:is(:hover, :focus-visible) {
+    transform: scale(1.035);
+  }
+
+  .cards:has(.card:first-child:is(:hover, :focus-visible)) .card:last-child {
+    transform: translateX(2.5%);
+  }
+
+  .cards:has(.card:last-child:is(:hover, :focus-visible)) .card:first-child {
+    transform: translateX(-2.5%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+    transform: none !important;
+  }
+}

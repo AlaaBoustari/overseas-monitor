@@ -1,6 +1,7 @@
 -- Run with psql -v ON_ERROR_STOP=1 against a migrated test database as postgres.
 -- All fixtures and changes are rolled back.
 begin;
+set local request.headers = '{"x-overseas-company":"services"}';
 
 insert into auth.users (id, email) values
   ('10000000-0000-0000-0000-000000000001', 'client-sync-test@example.test');
