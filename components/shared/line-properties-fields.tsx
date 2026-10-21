@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { LineItem } from "@/lib/db/document-calculations";
 
@@ -24,6 +27,10 @@ export function LinePropertiesFields({
   canMoveDown: boolean;
   canMoveUp: boolean;
 }) {
+  const [quantityDraft, setQuantityDraft] = useState({ value: line.qty, text: String(line.qty) });
+  if (quantityDraft.value !== line.qty) {
+    setQuantityDraft({ value: line.qty, text: String(line.qty) });
+  }
   const selectedTvaRate = line.tva_rate ?? defaultTvaRate;
   const normalizedTvaRate =
     selectedTvaRate === 0 || selectedTvaRate === 10 || selectedTvaRate === 20
@@ -87,10 +94,15 @@ export function LinePropertiesFields({
           <input
             className="mt-1 min-w-0 w-full rounded-xl border border-neutral-300 bg-white px-2 py-2 text-sm"
             disabled={locked}
-            min="0"
-            onChange={(event) => onChange("qty", event.target.value)}
+            onBlur={() => setQuantityDraft({ value: line.qty, text: String(line.qty) })}
+            onChange={(event) => {
+              const text = event.target.value;
+              setQuantityDraft({ value: Number(text) || 0, text });
+              onChange("qty", text);
+            }}
+            step="any"
             type="number"
-            value={line.qty}
+            value={quantityDraft.text}
           />
         </label>
       </div>

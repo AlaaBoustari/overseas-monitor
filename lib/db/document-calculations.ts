@@ -14,7 +14,8 @@ export type DocumentTotals = {
   ttc: number;
 };
 
-export function roundMoney(value: number) {
+export function roundMoney(value: number): number {
+  if (value < 0) return -roundMoney(-value) || 0;
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
@@ -35,7 +36,10 @@ export function calculateTotals(lineItems: readonly LineItem[], tvaRate: number)
       if (!lineItem || typeof lineItem !== "object") {
         throw new Error(`Line item ${index + 1} is invalid.`);
       }
-      const qty = validAmount(lineItem.qty, `Line item ${index + 1} quantity`);
+      const qty = lineItem.qty;
+      if (typeof qty !== "number" || !Number.isFinite(qty)) {
+        throw new Error(`Line item ${index + 1} quantity must be a finite number.`);
+      }
       const unitPrice = validAmount(lineItem.unit_price, `Line item ${index + 1} unit price`);
       const lineRate = validAmount(lineItem.tva_rate ?? tvaRate, `Line item ${index + 1} TVA rate`);
       if (lineRate > 100) throw new Error(`Line item ${index + 1} TVA rate cannot exceed 100%.`);

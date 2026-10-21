@@ -1,0 +1,249 @@
+{
+  "id": "5fbb3d9c-ffb4-46a0-9e2e-216a68b0161d",
+  "type": "facture",
+  "number": "074/2026/AI",
+  "date": "2026-09-29",
+  "partenaire_id": "b0dede0c-950d-42a9-b6bb-d33db55420dd",
+  "client_name": "MINGDIAN INTERNATIONAL",
+  "client_ice": "003389053000034",
+  "client_address": null,
+  "city": "Casablanca",
+  "line_items": [
+    {
+      "qty": 28.5,
+      "desc": "CHARIOT ELEVATEUR TELESCOPIQUE 17M",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 1200
+    },
+    {
+      "qty": 17,
+      "desc": "CHARIOT ELEVATEUR TELESCOPIQUE 17M",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 133
+    },
+    {
+      "qty": 16,
+      "desc": "PELLE SUR CHENILLES VOLVO",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 2000
+    },
+    {
+      "qty": 28,
+      "desc": "CHARIOT ELEVATEUR TELESCOPIQUE 17M",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 1200
+    },
+    {
+      "qty": 27,
+      "desc": "CHARIOT ELEVATEUR TELESCOPIQUE 17M",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 133
+    },
+    {
+      "qty": 26.5,
+      "desc": "CAMION CITERNE D’EAU",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 800
+    },
+    {
+      "qty": 2,
+      "desc": "CAMION CITERNE D'EAU",
+      "unit": "Heure",
+      "tva_rate": 20,
+      "unit_price": 88
+    },
+    {
+      "qty": 27,
+      "desc": "TRACTOPELLE  JCB",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 1000
+    },
+    {
+      "qty": 2,
+      "desc": "TRACTOPELLE JCB",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 111
+    },
+    {
+      "qty": 22,
+      "desc": "TRACTOPELLE JCB",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 1000
+    },
+    {
+      "qty": 30,
+      "desc": "CHARIOT TELESCOPIQUE MANITOU 17M",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 1200
+    },
+    {
+      "qty": 11.5,
+      "desc": "CHARIOT TELESCOPIQUE MANITOU 17M",
+      "unit": "Heure",
+      "tva_rate": 20,
+      "unit_price": 133
+    },
+    {
+      "qty": 21,
+      "desc": "CAMION CITERNE D'EAU",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 800
+    },
+    {
+      "qty": 20.5,
+      "desc": "CAMION 8*4 (20MP)",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 1700
+    },
+    {
+      "qty": 11.5,
+      "desc": "PELLE SUR CHENILLE 320C",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 2000
+    },
+    {
+      "qty": 4,
+      "desc": "PELLE SUR CHENILLE 320C",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 222
+    },
+    {
+      "qty": 11.5,
+      "desc": "PELLE SUR CHENILLE VOLVO",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 2000
+    },
+    {
+      "qty": 1,
+      "desc": "PELLE SUR CHENILLE VOLVO",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 222
+    },
+    {
+      "qty": 20,
+      "desc": "CHARGEUSE 950H",
+      "unit": "JOUR",
+      "tva_rate": 20,
+      "unit_price": 2300
+    },
+    {
+      "qty": 9,
+      "desc": "CHARGEUSE 950H",
+      "unit": "HEURE",
+      "tva_rate": 20,
+      "unit_price": 255
+    },
+    {
+      "qty": 31,
+      "desc": "CHARIOT TELESCOPIQUE MANITOU 17M",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 1200
+    },
+    {
+      "qty": 1,
+      "desc": "CHARIOT TELESCOPIQUE MANITOU 17M",
+      "unit": "Heure",
+      "tva_rate": 20,
+      "unit_price": 133
+    },
+    {
+      "qty": 21.5,
+      "desc": "CAMION CITERNE D'EAU",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 800
+    },
+    {
+      "qty": 23.5,
+      "desc": "TRACTOPELLE JCB",
+      "unit": "Jour",
+      "tva_rate": 20,
+      "unit_price": 1000
+    },
+    {
+      "qty": 1,
+      "desc": "Frais d’Entrée de chargeuse",
+      "unit": "Aller",
+      "tva_rate": 20,
+      "unit_price": 4000
+    },
+    {
+      "qty": 2,
+      "desc": "Frais d’entrée et sortie 320C",
+      "unit": "Aller-retour",
+      "tva_rate": 20,
+      "unit_price": 1500
+    },
+    {
+      "qty": 2,
+      "desc": "Dédouanement pelle sur chenille 320c",
+      "unit": "UN",
+      "tva_rate": 20,
+      "unit_price": 1000
+    },
+    {
+      "qty": 2,
+      "desc": "Frais d’entrée et sortie VOLVO",
+      "unit": "Aller-retour",
+      "tva_rate": 20,
+      "unit_price": 1500
+    },
+    {
+      "qty": 2,
+      "desc": "Dédouanement pelle sur chenille VOLVO",
+      "unit": "UN",
+      "tva_rate": 20,
+      "unit_price": 1000
+    }
+  ],
+  "tva_rate": 20,
+  "ht": 452867.5,
+  "tva": 90573.5,
+  "ttc": 543441,
+  "paid": false,
+  "paid_date": null,
+  "is_active": true,
+  "is_locked": false,
+  "validity_days": null,
+  "chantier": null,
+  "period_start": null,
+  "period_end": null,
+  "motif": null,
+  "reference_facture_number": null,
+  "created_by": null,
+  "created_at": "2026-09-15T09:04:28.498342+00:00",
+  "updated_at": "2026-10-21T11:40:44.676282+00:00",
+  "has_cachet": false,
+  "avoir_settlement_method": null,
+  "avoir_settlement_reference": null,
+  "devis_fuel_driver": "inclus",
+  "devis_payment_conditions": "À réception",
+  "devis_bank_name": "ATTIJARIWAFA BANK",
+  "devis_iban": "MA64 0071 7000 0643 2000 0003 2766",
+  "avoir_payment_method": null,
+  "avoir_payment_reference": null,
+  "source_pointage_sheet_id": null,
+  "bon_driver": "inclus",
+  "devis_driver": "inclus",
+  "manual_number_only": true,
+  "unlocked_by": "f5566832-168d-4479-9f6b-53d6601b87d5",
+  "unlocked_at": "2026-10-21T11:03:57.147783+00:00",
+  "company": "services"
+}

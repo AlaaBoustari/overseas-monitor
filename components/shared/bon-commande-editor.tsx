@@ -401,7 +401,7 @@ export function BonCommandeEditor({
               tva_rate: 10,
             }
           : {
-              desc: "Nouvelle prestation",
+              desc: "",
               unit: "Jour",
               qty: 1,
               unit_price: 0,
