@@ -307,6 +307,13 @@ export async function assignNumber(documentId: string) {
   if (document.is_locked) throw new DocumentError("LOCKED", "Un numéro ne peut pas être attribué à un document verrouillé.");
   if (document.manual_number_only) throw new DocumentError("INVALID_INPUT", "Ce document déverrouillé exige un numéro manuel.");
 
+  if (document.type === "facture") {
+    const { data, error } = await supabase.rpc("assign_facture_number", { p_document_id: documentId });
+    if (error) failDatabase(error);
+    if (!data) throw new DocumentError("DATABASE_ERROR", "Le numéro n’a pas pu être attribué.");
+    return getDocument(supabase, documentId);
+  }
+
   const year = Number(document.date.slice(0, 4));
   const { data: nextNumber, error: numberError } = await supabase.rpc("next_document_number", {
     p_type: document.type,
@@ -576,6 +583,22 @@ export async function setPaid(documentId: string, paid: boolean) {
 
 export function softDelete(documentId: string) {
   return setDocumentActive(documentId, false);
+}
+
+export async function permanentlyDeleteInvoice(documentId: string) {
+  requireId(documentId);
+  const supabase = await createClient();
+  await requireUser(supabase);
+  await requireDocumentEdit(supabase, "facture");
+  const document = await getDocument(supabase, documentId);
+  if (document.type !== "facture" || document.is_active) {
+    throw new DocumentError("INVALID_INPUT", "Seule une facture inactive peut être supprimée définitivement.");
+  }
+  const { data, error } = await supabase.from("documents")
+    .delete().eq("company", await getCompany()).eq("id", documentId)
+    .eq("type", "facture").eq("is_active", false).select("id").maybeSingle();
+  if (error) failDatabase(error);
+  if (!data) throw new DocumentError("CONCURRENT_UPDATE", "La facture a été restaurée ou supprimée dans un autre onglet. Rechargez la page.");
 }
 
 export function restore(documentId: string) {

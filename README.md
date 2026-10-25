@@ -40,6 +40,22 @@ use an isolated test database. The PDF regression script checks both companies:
 Run `node scripts/verify-company-routing.mjs` to check company navigation, header
 isolation, and refusal to load data or accept writes before the migration is present.
 
+## Invoice numbering and permanent deletion
+
+Apply `supabase/migrations/20261025000000_invoice_number_reuse_and_permanent_delete.sql`
+before deploying this app version. Invoice auto-numbering assigns and saves the
+highest currently assigned invoice number plus one, separately per company/year.
+It ignores past sequence reservations, so a tail number freed by renumbering to
+NAN or permanent deletion is reused. Inactive numbered invoices still reserve
+their number. Other document types retain their existing counters; the exact 043
+exception is unchanged.
+
+Inactive invoices have a permanent-delete option with confirmation. Existing
+invoice edit permissions apply, snapshots are deleted with the invoice, and the
+source Pointage is preserved. The database rejects deletion of active invoices.
+Verify in an isolated migrated test database with
+`psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/invoice-number-reuse-and-delete.sql`.
+
 ## Modules
 
 - **Dashboard** — current billing figures and shortcuts to authorised modules.

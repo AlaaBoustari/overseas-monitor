@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { getCompany } from "@/lib/company-server";
 import {
   assignNumber,
   assignNumberManually,
@@ -7,6 +9,7 @@ import {
   createDraftDocument,
   DocumentError,
   lockDocument,
+  permanentlyDeleteInvoice,
   setPaid,
   softDelete,
   restore,
@@ -131,6 +134,16 @@ export async function deleteInvoiceAction(documentId: string): Promise<ActionRes
 export async function restoreInvoiceAction(documentId: string): Promise<ActionResult> {
   try {
     return { ok: true, document: await restore(documentId) };
+  } catch (error) {
+    return result(error);
+  }
+}
+
+export async function permanentlyDeleteInvoiceAction(documentId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await permanentlyDeleteInvoice(documentId);
+    revalidatePath(`/${await getCompany()}/factures`);
+    return { ok: true };
   } catch (error) {
     return result(error);
   }

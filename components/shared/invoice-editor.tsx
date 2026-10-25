@@ -32,6 +32,7 @@ import {
   assignInvoiceNumberAction,
   assignInvoiceNumberManuallyAction,
   deleteInvoiceAction,
+  permanentlyDeleteInvoiceAction,
   restoreInvoiceAction,
   saveInvoiceAction,
   setInvoicePaidAction,
@@ -608,6 +609,21 @@ export function InvoiceEditor({
     });
   }
 
+  async function permanentlyDeleteDocument() {
+    if (document.is_active) return;
+    if (!(await confirm({
+      title: "Supprimer définitivement cette facture ?",
+      description: `La facture ${document.number || "sans numéro"} et ses snapshots seront supprimés définitivement. Cette action est irréversible. Le Pointage source, s’il existe, sera conservé.`,
+      confirmLabel: "Supprimer définitivement",
+      destructive: true,
+    }))) return;
+    startTransition(async () => {
+      const result = await permanentlyDeleteInvoiceAction(document.id);
+      if (!result.ok) return setError(result.error);
+      router.push("/factures?inactive=1");
+    });
+  }
+
   function printInvoice() {
     printWithTitle(`Facture-${document.number || `Brouillon-${document.client_name}`}`);
   }
@@ -1004,6 +1020,16 @@ export function InvoiceEditor({
               >
                 {document.is_active ? "Désactiver la facture" : "Restaurer la facture"}
               </button>
+              {!document.is_active ? (
+                <button
+                  className="rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50"
+                  disabled={pending}
+                  onClick={permanentlyDeleteDocument}
+                  type="button"
+                >
+                  Supprimer définitivement
+                </button>
+              ) : null}
             </div>
           ) : null}
         </aside>
