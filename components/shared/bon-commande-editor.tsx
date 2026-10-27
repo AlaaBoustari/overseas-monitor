@@ -23,6 +23,7 @@ import {
   Ship,
   LockOpen,
   Stamp,
+  TextCursorInput,
   Trash2,
   Truck,
   UserPen,
@@ -72,6 +73,7 @@ type Tool =
   | "details"
   | "totals"
   | "snapshots"
+  | "amount_words"
   | "delete";
 type ActionResult =
   | { ok: true; document: Invoice }
@@ -89,6 +91,7 @@ const tools: { id: Tool; label: string; Icon: typeof FilePlus2 }[] = [
   { id: "client", label: "Infos fournisseur", Icon: UserRound },
   { id: "date", label: "Date et lieu", Icon: CalendarDays },
   { id: "snapshots", label: "SNAPSHOTS", Icon: History },
+  { id: "amount_words", label: "Montant en lettres", Icon: TextCursorInput },
   { id: "delete", label: "Supprimer", Icon: Trash2 },
 ];
 const toolGroups: { label: string; tools: Tool[] }[] = [
@@ -96,7 +99,7 @@ const toolGroups: { label: string; tools: Tool[] }[] = [
     label: "Prestations",
     tools: ["line", "engin", "overtime", "mobilisation", "customs"],
   },
-  { label: "Document", tools: ["client", "date", "snapshots"] },
+  { label: "Document", tools: ["client", "date", "snapshots", "amount_words"] },
   { label: "Suivi", tools: ["delete"] },
 ];
 
@@ -247,7 +250,7 @@ export function BonCommandeEditor({
   );
   const previewSnapshot = snapshots.find((item) => item.id === previewSnapshotId) ?? null;
   const viewerDocument = previewSnapshot
-    ? ({ ...document, ...previewSnapshot.snapshot } as Invoice)
+    ? ({ ...document, ...previewSnapshot.snapshot, show_amount_words: previewSnapshot.snapshot.show_amount_words !== false } as Invoice)
     : document;
   const viewerLineItems = previewSnapshot?.snapshot.line_items ?? lineItems;
   const viewerTvaRate = previewSnapshot
@@ -524,6 +527,7 @@ export function BonCommandeEditor({
         client_ice: document.client_ice ?? "",
         client_address: document.client_address ?? "",
       },
+      document.show_amount_words !== false,
     );
   }
 
@@ -592,6 +596,10 @@ export function BonCommandeEditor({
 
   function selectTool(id: Tool) {
     if (id !== "snapshots") setPreviewSnapshotId(null);
+    if (id === "amount_words") {
+      setDocument((current) => ({ ...current, show_amount_words: current.show_amount_words === false }));
+      return;
+    }
     if (id === "line" || id === "overtime" || id === "mobilisation" || id === "customs")
       return addLine(id);
     if (id === "delete") return deleteDocument();
@@ -734,8 +742,9 @@ export function BonCommandeEditor({
                   const { label, Icon } = tool;
                   return (
                     <button
-                      className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-xs font-semibold transition-colors ${selectedTool === id ? "border-ink-900 bg-ink-900 text-white" : "border-neutral-300 bg-white text-ink-900 hover:bg-primary-50"}`}
+                      className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-xs font-semibold transition-colors ${selectedTool === id || (id === "amount_words" && document.show_amount_words !== false) ? "border-ink-900 bg-ink-900 text-white" : "border-neutral-300 bg-white text-ink-900 hover:bg-primary-50"}`}
                       disabled={(!document.is_active && id !== "delete") || (locked && id !== "delete")}
+                      aria-pressed={id === "amount_words" ? document.show_amount_words !== false : undefined}
                       key={id}
                       onClick={() => selectTool(id)}
                       type="button"
@@ -811,8 +820,9 @@ export function BonCommandeEditor({
         <div className="order-2 flex gap-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white p-2 shadow-sm print:hidden xl:hidden">
           {tools.map(({ id, label, Icon }) => (
             <button
-              className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold ${selectedTool === id ? "bg-ink-900 text-white" : "bg-white text-ink-900"}`}
+              className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold ${selectedTool === id || (id === "amount_words" && document.show_amount_words !== false) ? "bg-ink-900 text-white" : "bg-white text-ink-900"}`}
               disabled={(!document.is_active && id !== "delete") || (locked && id !== "delete")}
+              aria-pressed={id === "amount_words" ? document.show_amount_words !== false : undefined}
               key={id}
               onClick={() => selectTool(id)}
               type="button"

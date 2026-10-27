@@ -43,7 +43,7 @@ export async function GET(
 
   const { data: document, error } = await supabase
     .from("documents")
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, period_start, period_end, devis_fuel_driver, devis_driver, devis_payment_conditions, devis_bank_name, devis_iban, reference_facture_number, motif, avoir_payment_method, avoir_payment_reference").eq("company", await getCompany())
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, period_start, period_end, devis_fuel_driver, devis_driver, devis_payment_conditions, devis_bank_name, devis_iban, reference_facture_number, motif, avoir_payment_method, avoir_payment_reference").eq("company", await getCompany())
     .eq("id", id)
     .maybeSingle();
 

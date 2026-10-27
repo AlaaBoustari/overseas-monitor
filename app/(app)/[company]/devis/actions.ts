@@ -40,7 +40,7 @@ export type DevisDocument = DocumentRow & {
   devis_iban: string;
 };
 
-const select = "id, company, type, number, date, city, has_cachet, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, validity_days, chantier, period_start, period_end, devis_fuel_driver, devis_driver, devis_payment_conditions, devis_bank_name, devis_iban";
+const select = "id, company, type, number, date, city, has_cachet, show_amount_words, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, validity_days, chantier, period_start, period_end, devis_fuel_driver, devis_driver, devis_payment_conditions, devis_bank_name, devis_iban";
 
 async function getDevis(id: string) {
   const supabase = await createClient();
@@ -118,12 +118,13 @@ export async function saveDevisAction(
     client_ice: string;
     client_address: string;
   },
+  showAmountWords?: boolean,
 ): Promise<ActionResult> {
   try {
     const current = await getDevis(documentId);
     if (current.is_locked) throw new DocumentError("LOCKED", "Ce devis est verrouillé.");
     if (!details.client_name.trim()) throw new DocumentError("INVALID_INPUT", "Le nom du client est obligatoire.");
-    await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet);
+    await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet, showAmountWords);
     const supabase = await createClient();
     const update: Record<string, unknown> = {
       validity_days: details.validity_days,

@@ -21,6 +21,7 @@ import {
   Lock,
   Ship,
   Stamp,
+  TextCursorInput,
   LockOpen,
   Trash2,
   Truck,
@@ -66,6 +67,7 @@ type Invoice = {
   date: string;
   city: string;
   has_cachet: boolean;
+  show_amount_words: boolean;
   client_name: string;
   client_ice: string | null;
   client_address: string | null;
@@ -94,6 +96,7 @@ type Tool =
   | "payment"
   | "cachet"
   | "snapshots"
+  | "amount_words"
   | "delete";
 type ActionResult =
   | { ok: true; document: Invoice }
@@ -113,6 +116,7 @@ const tools: { id: Tool; label: string; Icon: typeof FilePlus2 }[] = [
   { id: "payment", label: "Règlement", Icon: WalletCards },
   { id: "cachet", label: "Ajouter le cachet", Icon: Stamp },
   { id: "snapshots", label: "SNAPSHOTS", Icon: History },
+  { id: "amount_words", label: "Montant en lettres", Icon: TextCursorInput },
   { id: "delete", label: "Supprimer", Icon: Trash2 },
 ];
 const toolGroups: { label: string; tools: Tool[] }[] = [
@@ -122,7 +126,7 @@ const toolGroups: { label: string; tools: Tool[] }[] = [
   },
   {
     label: "Document",
-    tools: ["client", "date", "cachet", "snapshots"],
+    tools: ["client", "date", "cachet", "snapshots", "amount_words"],
   },
   { label: "Suivi", tools: ["payment", "delete"] },
 ];
@@ -262,7 +266,7 @@ export function InvoiceEditor({
   );
   const previewSnapshot = snapshots.find((item) => item.id === previewSnapshotId) ?? null;
   const viewerDocument = previewSnapshot
-    ? ({ ...document, ...previewSnapshot.snapshot } as Invoice)
+    ? ({ ...document, ...previewSnapshot.snapshot, show_amount_words: previewSnapshot.snapshot.show_amount_words !== false } as Invoice)
     : document;
   const viewerLineItems = previewSnapshot?.snapshot.line_items ?? lineItems;
   const viewerTvaRate = previewSnapshot
@@ -529,6 +533,7 @@ export function InvoiceEditor({
       document.date,
       city,
       hasCachet,
+      document.show_amount_words !== false,
     );
   }
 
@@ -630,6 +635,10 @@ export function InvoiceEditor({
 
   function selectTool(id: Tool) {
     if (id !== "snapshots") setPreviewSnapshotId(null);
+    if (id === "amount_words") {
+      setDocument((current) => ({ ...current, show_amount_words: current.show_amount_words === false }));
+      return;
+    }
     if (id === "line" || id === "overtime" || id === "mobilisation" || id === "customs")
       return addLine(id);
     if (id === "cachet") return setHasCachet((current) => !current);
@@ -774,8 +783,9 @@ export function InvoiceEditor({
                   const disabled = isToolDisabled(id);
                   return (
                     <button
-                      className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-xs font-semibold transition-colors ${disabled ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 opacity-70" : selectedTool === id || (id === "cachet" && hasCachet) ? "border-ink-900 bg-ink-900 text-white" : "border-neutral-300 bg-white text-ink-900 hover:bg-primary-50"}`}
+                      className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-xs font-semibold transition-colors ${disabled ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 opacity-70" : selectedTool === id || (id === "cachet" && hasCachet) || (id === "amount_words" && document.show_amount_words !== false) ? "border-ink-900 bg-ink-900 text-white" : "border-neutral-300 bg-white text-ink-900 hover:bg-primary-50"}`}
                       disabled={disabled}
+                      aria-pressed={id === "amount_words" ? document.show_amount_words !== false : undefined}
                       key={id}
                       onClick={() => selectTool(id)}
                       type="button"
@@ -853,8 +863,9 @@ export function InvoiceEditor({
             const disabled = isToolDisabled(id);
             return (
               <button
-                className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold ${disabled ? "cursor-not-allowed bg-neutral-100 text-neutral-400 opacity-70" : selectedTool === id || (id === "cachet" && hasCachet) ? "bg-ink-900 text-white" : "bg-white text-ink-900"}`}
+                className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold ${disabled ? "cursor-not-allowed bg-neutral-100 text-neutral-400 opacity-70" : selectedTool === id || (id === "cachet" && hasCachet) || (id === "amount_words" && document.show_amount_words !== false) ? "bg-ink-900 text-white" : "bg-white text-ink-900"}`}
                 disabled={disabled}
+                aria-pressed={id === "amount_words" ? document.show_amount_words !== false : undefined}
                 key={id}
                 onClick={() => selectTool(id)}
                 type="button"

@@ -56,6 +56,16 @@ source Pointage is preserved. The database rejects deletion of active invoices.
 Verify in an isolated migrated test database with
 `psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/invoice-number-reuse-and-delete.sql`.
 
+## Amount in French
+
+Apply `supabase/migrations/20261027000000_document_amount_words_toggle.sql`
+before deploying this app version. All existing and new documents show the amount
+in French by default. The "Montant en lettres" button toggles it like the cachet;
+save the document to keep the choice for PDF exports, duplication and snapshots.
+Preview, print and PDF keep the text's space reserved when hidden.
+Run `node scripts/verify-amount-words.mjs` and `node scripts/verify-document-pdf.mjs`
+to check the toggle and compare visible/hidden PDF layouts.
+
 ## Modules
 
 - **Dashboard** — current billing figures and shortcuts to authorised modules.

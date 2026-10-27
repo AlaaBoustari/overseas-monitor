@@ -9,6 +9,7 @@ export type InvoicePageKind = "single" | "first" | "middle" | "last";
 export type AvoirPageDocument = {
   partenaire_id: string | null;
   company: CompanyId;
+  show_amount_words?: boolean;
   number: string | null;
   date: string;
   city: string;
@@ -220,7 +221,7 @@ export function AvoirPage({
             data-invoice-totals
           >
             <div className="relative">
-              <p className="text-sm font-medium leading-relaxed">
+              <p className="text-sm font-medium leading-relaxed" style={{ visibility: document.show_amount_words === false ? "hidden" : "visible" }}>
                 {amountWords}
               </p>
             </div>

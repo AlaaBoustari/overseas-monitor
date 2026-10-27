@@ -21,7 +21,7 @@ export default async function BonCommandeDocumentPage({
     supabase
       .from("documents")
       .select(
-        "id, company, type, number, date, city, has_cachet, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, validity_days, chantier, period_start, period_end, devis_payment_conditions, devis_bank_name, devis_iban",
+        "id, company, type, number, date, city, has_cachet, show_amount_words, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, validity_days, chantier, period_start, period_end, devis_payment_conditions, devis_bank_name, devis_iban",
       ).eq("company", await getCompany())
       .eq("id", id)
       .maybeSingle(),

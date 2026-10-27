@@ -84,10 +84,11 @@ export async function saveInvoiceAction(
   shouldLock: boolean,
   date?: string,
   city?: string,
-  hasCachet?: boolean
+  hasCachet?: boolean,
+  showAmountWords?: boolean
 ): Promise<ActionResult> {
   try {
-    let document = await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet);
+    let document = await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet, showAmountWords);
     await createDocumentSnapshot(documentId);
     if (shouldLock) document = await lockDocument(documentId);
     return { ok: true, document };

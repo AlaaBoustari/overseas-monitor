@@ -22,6 +22,7 @@ export type DocumentRow = {
   date: string;
   city: string;
   has_cachet: boolean;
+  show_amount_words: boolean;
   client_name: string;
   client_ice: string | null;
   client_address: string | null;
@@ -44,6 +45,7 @@ export type DocumentSnapshotData = Pick<
   | "date"
   | "city"
   | "has_cachet"
+  | "show_amount_words"
   | "client_name"
   | "client_ice"
   | "client_address"
@@ -135,7 +137,7 @@ async function requireDocumentEdit(supabase: ServerClient, type: DocumentType) {
 async function getDocument(supabase: ServerClient, documentId: string): Promise<DocumentRow> {
   const { data, error } = await supabase
     .from("documents")
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id").eq("company", await getCompany())
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id").eq("company", await getCompany())
     .eq("id", documentId)
     .maybeSingle();
   if (error) failDatabase(error);
@@ -238,7 +240,7 @@ export async function createDraftDocument(
       created_by: userId,
       source_pointage_sheet_id: initial?.sourcePointageSheetId ?? null,
     })
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .single();
   if (error) failDatabase(error);
   return data as DocumentRow;
@@ -251,7 +253,7 @@ export async function duplicateDocument(documentId: string) {
   const { data: source, error: sourceError } = await supabase
     .from("documents")
     .select(
-      "company, type, date, partenaire_id, client_name, client_ice, client_address, city, has_cachet, line_items, tva_rate, validity_days, chantier, period_start, period_end, motif, reference_facture_number, devis_fuel_driver, devis_driver, bon_driver, devis_payment_conditions, devis_bank_name, devis_iban, avoir_payment_method, avoir_payment_reference",
+      "company, type, date, partenaire_id, client_name, client_ice, client_address, city, has_cachet, show_amount_words, line_items, tva_rate, validity_days, chantier, period_start, period_end, motif, reference_facture_number, devis_fuel_driver, devis_driver, bon_driver, devis_payment_conditions, devis_bank_name, devis_iban, avoir_payment_method, avoir_payment_reference",
     ).eq("company", await getCompany())
     .eq("id", documentId)
     .maybeSingle();
@@ -328,7 +330,7 @@ export async function assignNumber(documentId: string) {
     .eq("id", documentId)
     .is("number", null)
     .eq("is_locked", false)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (updateError) failDatabase(updateError);
   if (updated) return updated as DocumentRow;
@@ -357,7 +359,7 @@ export async function assignNumberManually(documentId: string, value: string) {
     ? update.eq("number", document.number)
     : update.is("number", null);
   const { data: updated, error } = await update
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (error) failDatabase(error);
   if (updated) return updated as DocumentRow;
@@ -392,7 +394,7 @@ export async function lockDocument(documentId: string) {
     .eq("id", documentId)
     .eq("is_locked", false)
     .not("number", "is", null)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (error) failDatabase(error);
   if (updated) return updated as DocumentRow;
@@ -401,7 +403,7 @@ export async function lockDocument(documentId: string) {
   throw new DocumentError("CONCURRENT_UPDATE", "Le document a été modifié dans un autre onglet. Rechargez-le et réessayez.");
 }
 
-export async function updateLineItems(documentId: string, lineItems: readonly LineItem[], tvaRate?: number, date?: string, city?: string, hasCachet?: boolean) {
+export async function updateLineItems(documentId: string, lineItems: readonly LineItem[], tvaRate?: number, date?: string, city?: string, hasCachet?: boolean, showAmountWords?: boolean) {
   requireId(documentId);
   const supabase = await createClient();
   await requireUser(supabase);
@@ -419,10 +421,10 @@ export async function updateLineItems(documentId: string, lineItems: readonly Li
 
   const { data: updated, error } = await supabase
     .from("documents")
-    .update({ line_items: lineItems, tva_rate: rate, ...(date ? { date } : {}), ...(city?.trim() ? { city: city.trim() } : {}), ...(typeof hasCachet === "boolean" ? { has_cachet: hasCachet } : {}), ...totals }).eq("company", await getCompany())
+    .update({ line_items: lineItems, tva_rate: rate, ...(date ? { date } : {}), ...(city?.trim() ? { city: city.trim() } : {}), ...(typeof hasCachet === "boolean" ? { has_cachet: hasCachet } : {}), ...(typeof showAmountWords === "boolean" ? { show_amount_words: showAmountWords } : {}), ...totals }).eq("company", await getCompany())
     .eq("id", documentId)
     .eq("is_locked", false)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (error) failDatabase(error);
   if (updated) return updated as DocumentRow;
@@ -516,6 +518,7 @@ export async function restoreDocumentSnapshot(documentId: string, snapshotId: st
     date: snapshot.date,
     city: snapshot.city,
     has_cachet: Boolean(snapshot.has_cachet),
+    show_amount_words: snapshot.show_amount_words !== false,
     client_name: snapshot.client_name,
     client_ice: snapshot.client_ice,
     client_address: snapshot.client_address,
@@ -536,7 +539,7 @@ export async function restoreDocumentSnapshot(documentId: string, snapshotId: st
     .eq("id", documentId)
     .eq("type", document.type)
     .eq("is_locked", false)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (error) failDatabase(error);
   if (!restored) {
@@ -556,7 +559,7 @@ async function setDocumentActive(documentId: string, isActive: boolean) {
     .from("documents")
     .update({ is_active: isActive }).eq("company", await getCompany())
     .eq("id", documentId)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id")
     .maybeSingle();
   if (error) failDatabase(error);
   if (!updated) throw new DocumentError("CONCURRENT_UPDATE", "Le document a été modifié dans un autre onglet. Rechargez-le et réessayez.");
@@ -574,7 +577,7 @@ export async function setPaid(documentId: string, paid: boolean) {
     .from("documents")
     .update({ paid, paid_date: paid ? new Date().toISOString().slice(0, 10) : null }).eq("company", await getCompany())
     .eq("id", documentId)
-    .select("id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id, paid, paid_date")
+    .select("id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, source_pointage_sheet_id, paid, paid_date")
     .maybeSingle();
   if (error) failDatabase(error);
   if (!updated) throw new DocumentError("CONCURRENT_UPDATE", "Le document a été modifié dans un autre onglet. Rechargez-le et réessayez.");

@@ -20,7 +20,7 @@ export default async function FacturePage({
     supabase
       .from("documents")
       .select(
-        "id, company, type, number, date, city, has_cachet, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, paid, is_active, is_locked, manual_number_only, source_pointage_sheet_id",
+        "id, company, type, number, date, city, has_cachet, show_amount_words, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, paid, is_active, is_locked, manual_number_only, source_pointage_sheet_id",
       ).eq("company", await getCompany())
       .eq("id", id)
       .maybeSingle(),

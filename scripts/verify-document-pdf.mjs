@@ -13,6 +13,29 @@ const descriptions = [
   "-LOCATION D’UNE NACELLE ELECTRIQUE 16M (2)",
   "-LOCATION CHARIOT TELESCOPIQUE",
 ];
+const inspectPdf = (file) => JSON.parse(execFileSync(process.env.PDF_TEST_PYTHON || "python3", ["-c", `
+import json,sys
+from pypdf import PdfReader
+pages=[]
+for page in PdfReader(sys.argv[1]).pages:
+    positions=[]
+    hidden=[]
+    opacity=[1]
+    states=page['/Resources'].get('/ExtGState', {})
+    def operand(op,args,cm,tm):
+        if op == b'q': opacity.append(opacity[-1])
+        elif op == b'Q' and len(opacity)>1: opacity.pop()
+        elif op == b'gs':
+            state=states.get(args[0], {})
+            if '/ca' in state: opacity[-1]=float(state['/ca'])
+    def text(value,cm,tm,font,size):
+        if value.strip():
+            positions.append([value,cm,tm,size])
+            if opacity[-1] == 0: hidden.append(value)
+    value=page.extract_text(visitor_operand_before=operand, visitor_text=text)
+    pages.append({'text':value,'width':float(page.mediabox.width),'height':float(page.mediabox.height),'positions':positions,'hidden':hidden})
+print(json.dumps(pages))
+`, file], { encoding: "utf8" }));
 await mkdir("tmp/pdfs", { recursive: true });
 for (const company of companyIds) {
   const profile = companies[company];
@@ -40,7 +63,16 @@ for (const company of companyIds) {
       const pdf = await renderDocumentPdf(document, assets);
       const file = `tmp/pdfs/${company}-${type}-${count}.pdf`;
       await writeFile(file, pdf);
-      const output = JSON.parse(execFileSync(process.env.PDF_TEST_PYTHON || "python3", ["-c", "import json,sys; from pypdf import PdfReader; print(json.dumps([{'text':p.extract_text(),'width':float(p.mediabox.width),'height':float(p.mediabox.height)} for p in PdfReader(sys.argv[1]).pages]))", file], { encoding: "utf8" }));
+      const output = inspectPdf(file);
+      const hiddenFile = file.replace(".pdf", "-no-words.pdf");
+      await writeFile(hiddenFile, await renderDocumentPdf({ ...document, show_amount_words: false }, assets));
+      const hiddenOutput = inspectPdf(hiddenFile);
+      const layout = (pages) => pages.map(({ text, width, height, positions }) => ({ text, width, height, positions }));
+      assert.deepEqual(layout(hiddenOutput), layout(output), `${file}: hiding words changed page layout or content positions`);
+      assert.ok(output.every((page) => page.hidden.length === 0), `${file}: amount words are not visible by default`);
+      const hiddenText = hiddenOutput.flatMap((page) => page.hidden).join("");
+      assert.ok(hiddenText.includes("dirhams"), `${hiddenFile}: amount words were not hidden`);
+      assert.ok(!hiddenText.includes("Total") && !hiddenText.includes("LIGNE-") && !hiddenText.includes("Adresse"), `${hiddenFile}: unrelated content hidden`);
       for (const page of output) {
         assert.ok(Math.abs(page.width - 595.28) < 0.1 && Math.abs(page.height - 841.89) < 0.1, `${file}: page is not A4`);
       }
@@ -48,7 +80,11 @@ for (const company of companyIds) {
       const text = pages.join("\n");
       assert.ok(text.includes(profile.address), `${file}: incorrect company footer`);
       if (company === "lifting") {
-        assert.ok(!text.includes(companies.services.ice) && !text.includes(companies.services.email), `${file}: Services details leaked into Lifting PDF`);
+        for (const field of ["ice", "email"]) {
+          if (profile[field] !== companies.services[field]) {
+            assert.ok(!text.includes(companies.services[field]), `${file}: Services ${field} leaked into Lifting PDF`);
+          }
+        }
       } else {
         assert.ok(text.includes(companies.services.ice), `${file}: Services footer changed`);
       }

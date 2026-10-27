@@ -33,7 +33,7 @@ export type AvoirSnapshotsResult =
   | { ok: true; snapshots: DocumentSnapshot[] }
   | { ok: false; error: string };
 
-const select = "id, company, type, number, date, city, has_cachet, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, motif, reference_facture_number, avoir_payment_method, avoir_payment_reference";
+const select = "id, company, type, number, date, city, has_cachet, show_amount_words, partenaire_id, client_name, client_ice, client_address, line_items, tva_rate, ht, tva, ttc, is_active, is_locked, manual_number_only, motif, reference_facture_number, avoir_payment_method, avoir_payment_reference";
 
 async function getAvoir(id: string) {
   const supabase = await createClient();
@@ -110,12 +110,13 @@ export async function saveAvoirAction(
   city: string,
   hasCachet: boolean,
   details: { motif: string; referenceFactureNumber: string; paymentMethod: string; paymentReference: string },
+  showAmountWords?: boolean,
 ): Promise<ActionResult> {
   try {
     if (!details.motif.trim()) throw new DocumentError("INVALID_INPUT", "Le motif de l’avoir est obligatoire.");
     const current = await getAvoir(documentId);
     if (current.is_locked) throw new DocumentError("LOCKED", "Cet avoir est verrouillé.");
-    await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet);
+    await updateLineItems(documentId, lineItems, tvaRate, date, city, hasCachet, showAmountWords);
     const supabase = await createClient();
     const { error } = await supabase.from("documents").update({
       motif: details.motif.trim(),

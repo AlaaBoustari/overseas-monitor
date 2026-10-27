@@ -23,6 +23,7 @@ export type PdfDocumentData = {
   date: string;
   city: string | null;
   has_cachet: boolean;
+  show_amount_words?: boolean;
   client_name: string;
   client_ice: string | null;
   client_address: string | null;
@@ -398,7 +399,7 @@ function Totals({ document, cachet }: { document: PdfDocumentData; cachet: strin
         wrap={false}
       >
         <View style={styles.words}>
-          <Text>{amountInFrenchWords(document.ttc)}</Text>
+          <Text style={{ opacity: document.show_amount_words === false ? 0 : 1 }}>{amountInFrenchWords(document.ttc)}</Text>
           {document.type === "facture" && document.has_cachet && cachet ? <Image src={cachet} style={styles.invoiceStamp} /> : null}
         </View>
         <View style={styles.totals}>
